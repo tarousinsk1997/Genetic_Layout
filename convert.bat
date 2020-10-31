@@ -1,0 +1,1 @@
+C:\Users\tarou\AppData\Roaming\Python\Python38\Scripts\pyuic5.exe C:\Users\tarou\PycharmProjects\Genetic_Layout\UI_Form.ui -o C:\Users\tarou\PycharmProjects\Genetic_Layout\UI_Form.py 
