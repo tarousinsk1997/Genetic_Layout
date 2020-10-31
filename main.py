@@ -1,4 +1,4 @@
-import sys, os
+import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import  QPainter, QColor, QBrush, QPen
 from UI_Form import Ui_MainWindow  # импорт нашего сгенерированного файла
