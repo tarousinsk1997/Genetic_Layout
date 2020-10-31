@@ -1,4 +1,4 @@
-import sys
+import sys, random as rnd
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QColor, QBrush, QPen
 from UI_Form import Ui_MainWindow  # импорт нашего сгенерированного файла
@@ -30,15 +30,13 @@ class Mywindow(QtWidgets.QMainWindow):
     def paintEvent(self, e):
         qp = QPainter()
         qp.begin(self.ui.widget)
-        self.drawRectangles(qp, rog.fcl, QColor(255, 0, 0), 10)
-        self.drawRectangles(qp, rog.SubArea_1, QColor(255, 255, 0), 5)
-        self.drawRectangles(qp, rog.SubArea_2, QColor(0, 255, 255), 5)
-
-        # self.drawRectangles(qp, rog.Site_list[0], QColor(0, 0, 0, 1))
-        # self.drawRectangles(qp, rog.Site_list[1], QColor(0, 0, 0, 1))
-        # self.drawRectangles(qp, rog.Site_list[2], QColor(0, 0, 0, 1))
-        # self.drawRectangles(qp, rog.Site_list[3], QColor(0, 0, 0, 1))
-
+        self.drawRectangles(qp, rog.fcl, QColor(0, 0, 0), 5)
+        self.drawRectangles(qp, rog.SubArea_1, QColor(0, 0, 0), 2)
+        self.drawRectangles(qp, rog.SubArea_2, QColor(0, 0, 0), 2)
+        self.drawRectangles(qp, rog.Site_list[0], QColor(0, 0, 255), 1)
+        self.drawRectangles(qp, rog.Site_list[1], QColor(0, 0, 255), 1)
+        self.drawRectangles(qp, rog.Site_list[2], QColor(0, 0, 255), 1)
+        self.drawRectangles(qp, rog.Site_list[3], QColor(0, 0, 255), 1)
         qp.end()
 
     def drawRectangles(self, qp, rect_obj, qcolor, mt):
@@ -81,10 +79,11 @@ class SecondWindow(QtWidgets.QMainWindow):
 
 
 app = QtWidgets.QApplication([])
-
 rog = course.Random_object_generator()
 rog.create_sub_Area()
 rog.excelparser()
+
+
 
 application = Mywindow()
 
