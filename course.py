@@ -34,7 +34,7 @@ class Site(Rect):
 
 class Random_object_generator: #создание всех объектов
     def __init__(self):
-        self.fcl = Facility(0,0, 72, 144)
+        self.fcl = Facility(0,0, 100, 144)
 
         self.Sub_Area_list = [] #список объектов подпространств цеха
         self.Site_list = [] #список объектов участков цеха
@@ -47,8 +47,8 @@ class Random_object_generator: #создание всех объектов
 
 
     def create_sub_Area(self): #создание
-        self.SubArea_1 = SubArea(0, 0, 72, 72) # создание подпространств
-        self.SubArea_2 = SubArea(72, 0, 72, 72)
+        self.SubArea_1 = SubArea(30, 30, 30, 30) # создание подпространств
+        self.SubArea_2 = SubArea(0, 0, 30, 30)
 
 
 
