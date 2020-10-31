@@ -43,9 +43,7 @@ class Visual_Obj:
         dy = float(ymax - ymin) / self.d
         d = max(dx, dy)
         d = float(d)
-        print(xmin)
         xmin -= d
-        print(xmax)
         xmax += d
         ymin -= d
         ymax += d
@@ -68,7 +66,6 @@ class Visual_Obj:
         C = self.widget.height()
         self.nc.newx = int(A + self.k.kx * (oldx - self.k.xmin))
         self.nc.newy = int(C + (-1 if self.prop else 1) * self.k.ky * (oldy - self.k.ymin))
-        print('ASS')
     # oldx oldy
     #coordCulc(oldx,oldy)
     #DrowRect(visual.nc.newx...
