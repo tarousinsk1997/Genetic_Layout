@@ -26,15 +26,23 @@ class SubArea(Rect):
 
 
 class Site(Rect):
-    def __init__(self, S, name, x0, y0, width, height):
+    def __init__(self, S, name, x0, y0, width, height, subArea_obj):
         super().__init__(x0, y0, width, height)
         self.name = name
         self.S = S
+        self.parent = subArea_obj
+        self.random_pos_gen()
+
+    def random_pos_gen(self):
+        self.x0 = rnd.randrange(self.parent.x0, self.parent.x0 +  self.parent.width - self.width + 1)
+        self.y0 = rnd.randrange(self.parent.y0, self.parent.y0 + self.parent.height - self.height + 1)
+        print(self.x0, self.y0)
+
 
 
 class Random_object_generator: #создание всех объектов
     def __init__(self):
-        self.fcl = Facility(0,0, 100, 144)
+        self.fcl = Facility(0,0, 144, 72)
 
         self.Sub_Area_list = [] #список объектов подпространств цеха
         self.Site_list = [] #список объектов участков цеха
@@ -44,11 +52,9 @@ class Random_object_generator: #создание всех объектов
         self.ZipList_area = zip([], []) #zip Площадей и названий
 
 
-
-
     def create_sub_Area(self): #создание
-        self.SubArea_1 = SubArea(30, 30, 30, 30) # создание подпространств
-        self.SubArea_2 = SubArea(0, 0, 30, 30)
+        self.SubArea_1 = SubArea(0, 0, 72, 72) # создание подпространств
+        self.SubArea_2 = SubArea(72, 0, 72, 72)
 
 
 
@@ -74,16 +80,16 @@ class Random_object_generator: #создание всех объектов
                 self.cargo_matrix[rows][colounmns] = self.cargo_sheet.cell_value(rows + 1, colounmns + 1)
 
         self.ZipList_area = zip(self.area_sitenamelist, self.area_sitespacelist)
-        #print(list(self.ZipList_area),'\n', self.cargo_matrix)
+        print(list(self.ZipList_area),'\n', self.cargo_matrix)
 
-        for i in range(len(self.area_sitenamelist)):
-            self.Site_list.append(Site(self.area_sitespacelist[i], self.area_sitenamelist[i], 0, 0, 20, 20))
+        for i in range(0, len(self.area_sitenamelist)):
+            self.Site_list.append(Site(self.area_sitespacelist[i],
+                                       self.area_sitenamelist[i],
+                                       0, 0, 20, 20,
+                                       self.SubArea_1 if i < 2 else self.SubArea_2))
 
-        #print(list(self.ZipList_area))
 
 
-rog = Random_object_generator()
-rog.excelparser()
 
 
 

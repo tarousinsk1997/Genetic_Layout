@@ -1,7 +1,4 @@
 
-import course
-
-
 class Koef:
     def __init__(self):
         self.kx = 0
