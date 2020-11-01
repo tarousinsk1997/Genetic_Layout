@@ -1,4 +1,4 @@
-
+import course
 class Koef:
     def __init__(self):
         self.kx = 0
@@ -56,6 +56,8 @@ class Visual_Obj:
         if self.prop:
             self.k.kx = abs(min(self.k.kx, self.k.ky))
             self.k.ky = self.k.kx
+
+
 
     def coordCulc(self, oldx, oldy):
         A = 0

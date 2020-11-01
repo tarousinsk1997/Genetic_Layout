@@ -1,10 +1,9 @@
 import sys, random as rnd
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QPainter, QColor, QBrush, QPen
 from UI_Form import Ui_MainWindow  # импорт нашего сгенерированного файла
 from PyQt5.QtCore import Qt, QObject, QEvent
 import Visual, course
-
 
 # os.system(r'C:\\Users\\tarou\\PycharmProjects\\Genetic_Layout\\convert.bat')
 
@@ -37,6 +36,7 @@ class Mywindow(QtWidgets.QMainWindow):
         self.drawRectangles(qp, rog.Site_list[1], QColor(0, 0, 255), 1)
         self.drawRectangles(qp, rog.Site_list[2], QColor(0, 0, 255), 1)
         self.drawRectangles(qp, rog.Site_list[3], QColor(0, 0, 255), 1)
+        self.drawPoints(qp, QColor(128, 128, 128))
         qp.end()
 
     def drawRectangles(self, qp, rect_obj, qcolor, mt):
@@ -60,6 +60,25 @@ class Mywindow(QtWidgets.QMainWindow):
         pen = QPen(qcolor, mt, Qt.SolidLine)
         qp.setPen(pen)
         qp.drawRect(x_0, y_0, width, height)
+
+
+    def drawPoints(self, qp, qcolor):
+        pen = QPen(qcolor, 2)
+        qp.setPen(pen)
+        Visual_obj = Visual.Visual_Obj(False, self.ui.widget, 10)
+        Visual_obj.koefCulc(rog.fcl)
+
+
+        for point in rog.fcl.points_array:
+            Visual_obj.coordCulc(point.x(), point.y())
+            x = Visual_obj.nc.newx
+            y = Visual_obj.nc.newy
+            qp.drawPoint(x, y)
+
+
+
+
+
 
     # def eventFilter(self, obj, event):
     #     if event.type() == QEvent.Paint:
