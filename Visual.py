@@ -1,7 +1,4 @@
-
 import course
-
-
 class Koef:
     def __init__(self):
         self.kx = 0
@@ -29,15 +26,15 @@ class Visual_Obj:
         self.d = d   # коэф отступа от границ экрана
         return
 
-    def koefCulc(self,  facility):
+    def koefCulc(self, Rect):
         A = int(0)
         B = self.widget.width()
         C = self.widget.height()
         D = 0
         xmin = 0
-        xmax = facility.width
+        xmax = Rect.width
         ymin = 0
-        ymax = facility.height
+        ymax = Rect.height
 
         dx = float(xmax - xmin) / self.d
         dy = float(ymax - ymin) / self.d
@@ -59,6 +56,8 @@ class Visual_Obj:
         if self.prop:
             self.k.kx = abs(min(self.k.kx, self.k.ky))
             self.k.ky = self.k.kx
+
+
 
     def coordCulc(self, oldx, oldy):
         A = 0
