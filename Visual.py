@@ -32,9 +32,9 @@ class Visual_Obj:
         C = self.widget.height()
         D = 0
         xmin = 0
-        xmax = Rect.width
+        xmax = Rect.width()
         ymin = 0
-        ymax = Rect.height
+        ymax = Rect.height()
 
         dx = float(xmax - xmin) / self.d
         dy = float(ymax - ymin) / self.d

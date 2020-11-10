@@ -5,48 +5,50 @@ rrmin = 0.5
 rrmax = 1
 
 
-class Rect:
-    def __init__(self, x0, y0, width=0, height=0):
-        self.width = width
-        self.height = height
-        self.x0 = x0
-        self.y0 = y0
 
-class Facility(Rect):
+
+class Facility(QtCore.QRect):
     def __init__(self, x0, y0, width, height):
         super().__init__(x0, y0, width, height)
+        self.setX(x0)
+        self.setY(y0)
+        self.setWidth(width)
+        self.setHeight(height)
         self.points_array = []
-        self.define_points_array()
         self.kx = 0
         self.ky = 0
+        self.define_points_array()
 
     def define_points_array(self):
-        for i in range(self.x0, self.width + 1):
-            for j in range(self.y0, self.height + 1):
+        for i in range(self.x(), self.width() + 1):
+            for j in range(self.y(), self.height() + 1):
                 self.points_array.append(QtCore.QPoint(i, j))
     SubAreaList = list()
 
 
 
 
-class SubArea(Rect):
+class SubArea(QtCore.QRect):
     def __init__(self, x0, y0, width, height):
         super().__init__(x0, y0, width, height)
 
     SiteList = list()
 
 
-class Site(Rect):
+class Site(QtCore.QRect):
     def __init__(self, S, name, x0, y0, width, height, subArea_obj):
         super().__init__(x0, y0, width, height)
         self.name = name
         self.S = S
         self.parent = subArea_obj
         self.random_pos_gen()
+        self.setWidth(width)
+        self.setHeight(height)
+
 
     def random_pos_gen(self):
-        self.x0 = rnd.randrange(self.parent.x0, self.parent.x0 +  self.parent.width - self.width + 1)
-        self.y0 = rnd.randrange(self.parent.y0, self.parent.y0 + self.parent.height - self.height + 1)
+        self.setX(rnd.randrange(self.parent.x(), self.parent.x() +  self.parent.width() - self.width() + 1))
+        self.setY(rnd.randrange(self.parent.y(), self.parent.y() + self.parent.height() - self.height() + 1))
 
 
 

@@ -43,15 +43,15 @@ class Mywindow(QtWidgets.QMainWindow):
     def drawRectangles(self, qp, rect_obj, qcolor, mt):
         Visual_obj = Visual.Visual_Obj(False, self.ui.widget, 10)
         Visual_obj.koefCulc(rog.fcl)
-        Visual_obj.coordCulc(rect_obj.x0,rect_obj.y0+ rect_obj.height)
+        Visual_obj.coordCulc(rect_obj.x(), rect_obj.y() + rect_obj.height())
         x_0 = Visual_obj.nc.newx
         y_0 = Visual_obj.nc.newy
 
-        Visual_obj.coordCulc(rect_obj.x0 + rect_obj.width,rect_obj.y0 + rect_obj.height)
+        Visual_obj.coordCulc(rect_obj.x() + rect_obj.width(),rect_obj.y() + rect_obj.height())
         x_1 = Visual_obj.nc.newx
         y_1 = Visual_obj.nc.newy
 
-        Visual_obj.coordCulc(rect_obj.x0, rect_obj.y0)
+        Visual_obj.coordCulc(rect_obj.x(), rect_obj.y())
         x_2 = Visual_obj.nc.newx
         y_2 = Visual_obj.nc.newy
 
