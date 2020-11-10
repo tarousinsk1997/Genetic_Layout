@@ -102,18 +102,23 @@ class SecondWindow(QtWidgets.QMainWindow):
 
 def generate_initial_pop(quantity):
     for i in range(0, quantity):
-        rog = course.Initial_Population()
-        rog.create_sub_Area()
-        rog.excelparser()
-        for i in rog.Site_list:
-            i.chromosome = rog.get_concatenated_bitstring(i, 10) #32 битные строки, не трогать
-            i.graycode = course.binary_to_gray(i.chromosome)
+        individ = course.Individual()
+        individ.create_sub_Area()
+        individ.excelparser()
+        individ.createSites()
+        for Site in individ.Site_list:
+            chromosome_part = individ.get_concatenated_bitstring(Site, 10)  # 32 битные строки, не трогать
+            graycode = course.binary_to_gray(chromosome_part)
+            individ.chromosome = individ.chromosome + graycode
 
-        Facility_list.append(rog)
+
+        Facility_list.append(individ)
+
+
 
 app = QtWidgets.QApplication([])
 
-generate_initial_pop(100) #создание стартовой популяции Эксель парсится n раз ((
+generate_initial_pop(10) #создание стартовой популяции Эксель парсится n раз ((
 
 application = Mywindow()
 application.show()

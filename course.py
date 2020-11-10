@@ -1,7 +1,7 @@
 import random as rnd
 from PyQt5 import QtCore
 from bitstring import BitStream, BitArray
-import xlrd, numpy as np
+import xlrd, math
 rrmin = 0.5
 rrmax = 1
 
@@ -35,15 +35,21 @@ class SubArea(QtCore.QRect):
 
 
 class Site(QtCore.QRect):
-    def __init__(self, S, name, x0, y0, width, height, subArea_obj):
+    def __init__(self, S, name, x0, y0, subArea_obj, width=0, height=0):
         super().__init__(x0, y0, width, height)
         self.name = name
         self.S = S
         self.parent = subArea_obj
-        self.random_pos_gen()
-        self.setWidth(width)
-        self.setHeight(height)
         self.square_kf = rnd.uniform(rrmin, rrmax)
+        self.setWidth(round(math.sqrt(S) * self.square_kf))
+        self.setHeight(round(self.S / self.width()))
+
+        self.random_pos_gen()
+
+        self.setWidth(round(math.sqrt(S) * self.square_kf)) #требуется два раза потому что метод на 54 строке меняет предыдущие вызовы на 44, 45
+        self.setHeight(round(self.S / self.width()))
+
+
 
 
     def random_pos_gen(self):
@@ -51,7 +57,7 @@ class Site(QtCore.QRect):
         self.setY(rnd.randrange(self.parent.y(), self.parent.y() + self.parent.height() - self.height() + 1))
 
 
-class Initial_Population: #создание всех объектов
+class Individual: #создание всех объектов
     def __init__(self):
         self.fcl = Facility(0, 0, 144, 72)
 
@@ -94,10 +100,11 @@ class Initial_Population: #создание всех объектов
 
         self.ZipList_area = zip(self.area_sitenamelist, self.area_sitespacelist)
 
+    def createSites(self):
         for i in range(0, len(self.area_sitenamelist)):
             self.Site_list.append(Site(self.area_sitespacelist[i],
                                        self.area_sitenamelist[i],
-                                       0, 0, 20, 20,
+                                       0, 0,
                                        self.SubArea_1 if i < 2 else self.SubArea_2))
 
     def get_concatenated_bitstring(self, Site, length):
