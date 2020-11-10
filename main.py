@@ -26,6 +26,7 @@ class Mywindow(QtWidgets.QMainWindow):
     #     self.drawRectangles(qp)
     #     qp.end()
 
+
     def paintEvent(self, e):
         qp = QPainter()
         qp.begin(self.ui.widget)

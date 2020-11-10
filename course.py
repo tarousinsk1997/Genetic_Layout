@@ -21,8 +21,8 @@ class Facility(Rect):
         self.ky = 0
 
     def define_points_array(self):
-        for i in range(self.x0, self.width):
-            for j in range(self.y0, self.height):
+        for i in range(self.x0, self.width + 1):
+            for j in range(self.y0, self.height + 1):
                 self.points_array.append(QtCore.QPoint(i, j))
     SubAreaList = list()
 
