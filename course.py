@@ -1,5 +1,6 @@
 import random as rnd
 from PyQt5 import QtCore
+from bitstring import BitStream, BitArray
 import xlrd, numpy as np
 rrmin = 0.5
 rrmax = 1
@@ -26,8 +27,6 @@ class Facility(QtCore.QRect):
     SubAreaList = list()
 
 
-
-
 class SubArea(QtCore.QRect):
     def __init__(self, x0, y0, width, height):
         super().__init__(x0, y0, width, height)
@@ -44,6 +43,7 @@ class Site(QtCore.QRect):
         self.random_pos_gen()
         self.setWidth(width)
         self.setHeight(height)
+        self.square_kf = rnd.uniform(rrmin, rrmax)
 
 
     def random_pos_gen(self):
@@ -53,16 +53,18 @@ class Site(QtCore.QRect):
 
 
 
-class Random_object_generator: #создание всех объектов
+class Initial_Population: #создание всех объектов
     def __init__(self):
-        self.fcl = Facility(0,0, 144, 72)
+        self.fcl = Facility(0, 0, 144, 72)
 
         self.Sub_Area_list = [] #список объектов подпространств цеха
         self.Site_list = [] #список объектов участков цеха
         self.area_sitenamelist = [] #список значений имен участков цеха
         self.area_sitespacelist = [] #список значений площадей цеха
         self.cargo_matrix = [] #список объектов подпространств цеха
-        self.ZipList_area = zip([], []) #zip Площадей и названий
+        self.ZipList_area = zip([], []) #zip Площадей и названи
+        self.chromosome = ''
+        self.graycode = ''
 
 
     def create_sub_Area(self): #создание
@@ -99,6 +101,45 @@ class Random_object_generator: #создание всех объектов
                                        self.area_sitenamelist[i],
                                        0, 0, 20, 20,
                                        self.SubArea_1 if i < 2 else self.SubArea_2))
+
+    def get_concatenated_bitstring(self, Site, length):
+        s_koef_bit = BitArray(float=Site.square_kf, length=32).bin
+        x = format(Site.x(), 'b').zfill(length)
+        y = format(Site.y(), 'b').zfill(length)
+        concat = s_koef_bit + x + y
+        return concat
+
+
+def binary_to_gray(n):
+    """Convert Binary to Gray codeword and return it."""
+    n = int(n, 2)  # convert to int
+    n ^= (n >> 1)
+
+    # bin(n) returns n's binary representation with a '0b' prefixed
+    # the slice operation is to remove the prefix
+    return bin(n)[2:]
+
+
+def gray_to_binary(n):
+    """Convert Gray codeword to binary and return it."""
+    n = int(n, 2)  # convert to int
+
+    mask = n
+    while mask != 0:
+        mask >>= 1
+        n ^= mask
+
+    # bin(n) returns n's binary representation with a '0b' prefixed
+    # the slice operation is to remove the prefix
+    return bin(n)[2:]
+
+
+
+
+
+
+
+
 
 
 
