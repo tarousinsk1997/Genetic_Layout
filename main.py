@@ -106,6 +106,7 @@ def generate_initial_pop(quantity):
         individ.create_sub_Area()
         individ.excelparser()
         individ.createSites()
+
         for Site in individ.Site_list:
             chromosome_part = individ.get_concatenated_bitstring(Site, 10)  # 32 битные строки, не трогать
             graycode = course.binary_to_gray(chromosome_part)
@@ -115,10 +116,9 @@ def generate_initial_pop(quantity):
         Facility_list.append(individ)
 
 
-
 app = QtWidgets.QApplication([])
 
-generate_initial_pop(10) #создание стартовой популяции Эксель парсится n раз ((
+generate_initial_pop(100) #создание стартовой популяции Эксель парсится n раз ((
 
 application = Mywindow()
 application.show()

@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 from bitstring import BitStream, BitArray
 import xlrd, math
 rrmin = 0.5
-rrmax = 1
+rrmax = 1.5
 
 
 
