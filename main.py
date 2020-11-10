@@ -7,7 +7,7 @@ import Visual, course
 
 # os.system(r'C:\\Users\\tarou\\PycharmProjects\\Genetic_Layout\\convert.bat')
 
-Facility_list = []
+Facility_list = [] # Здесь хранятся особи на текущей итерации
 
 
 class Mywindow(QtWidgets.QMainWindow):

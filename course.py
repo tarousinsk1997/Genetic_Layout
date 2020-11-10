@@ -51,8 +51,6 @@ class Site(QtCore.QRect):
         self.setY(rnd.randrange(self.parent.y(), self.parent.y() + self.parent.height() - self.height() + 1))
 
 
-
-
 class Initial_Population: #создание всех объектов
     def __init__(self):
         self.fcl = Facility(0, 0, 144, 72)
