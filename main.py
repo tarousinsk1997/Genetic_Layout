@@ -4,10 +4,12 @@ from PyQt5.QtGui import QPainter, QColor, QBrush, QPen
 from UI_Form import Ui_MainWindow  # импорт нашего сгенерированного файла
 from PyQt5.QtCore import Qt, QObject, QEvent
 import Visual, course
+import time
+import multiprocessing
+import math
+import DEAP_implementation as DI
 
 # os.system(r'C:\\Users\\tarou\\PycharmProjects\\Genetic_Layout\\convert.bat')
-
-Facility_list = [] # Здесь хранятся особи на текущей итерации
 
 
 class Mywindow(QtWidgets.QMainWindow):
@@ -33,19 +35,17 @@ class Mywindow(QtWidgets.QMainWindow):
     def paintEvent(self, e):
         qp = QPainter()
         qp.begin(self.ui.widget)
-        self.drawRectangles(qp, Facility_list[self.i].fcl, QColor(0, 0, 0), 5)
-        self.drawRectangles(qp, Facility_list[self.i].SubArea_1, QColor(0, 0, 0), 2)
-        self.drawRectangles(qp, Facility_list[self.i].SubArea_2, QColor(0, 0, 0), 2)
-        self.drawRectangles(qp, Facility_list[self.i].Site_list[0], QColor(0, 0, 255), 1)
-        self.drawRectangles(qp, Facility_list[self.i].Site_list[1], QColor(0, 0, 255), 1)
-        self.drawRectangles(qp, Facility_list[self.i].Site_list[2], QColor(0, 0, 255), 1)
-        self.drawRectangles(qp, Facility_list[self.i].Site_list[3], QColor(0, 0, 255), 1)
+        self.drawRectangles(qp, FCL_Ref.fcl, QColor(0, 0, 0), 5)
+        #self.drawRectangles(qp, FCL_Ref.SubArea_1, QColor(0, 0, 0), 2)
+        #self.drawRectangles(qp, FCL_Ref.SubArea_2, QColor(0, 0, 0), 2)
+        for qrect, name  in zip(FCL_Ref.Site_list, FCL_Ref.area_sitenamelist):
+            self.drawRectangles(qp, qrect, QColor(rnd.randint(0,255),rnd.randint(0,255),rnd.randint(0,255)), 2, name=name)
         self.drawPoints(qp, QColor(128, 128, 128))
         qp.end()
 
-    def drawRectangles(self, qp, rect_obj, qcolor, mt):
+    def drawRectangles(self, qp, rect_obj, qcolor, mt, name=''):
         Visual_obj = Visual.Visual_Obj(False, self.ui.widget, 10)
-        Visual_obj.koefCulc(Facility_list[self.i].fcl)
+        Visual_obj.koefCulc(FCL_Ref.fcl)
         Visual_obj.coordCulc(rect_obj.x(), rect_obj.y() + rect_obj.height())
         x_0 = Visual_obj.nc.newx
         y_0 = Visual_obj.nc.newy
@@ -64,24 +64,20 @@ class Mywindow(QtWidgets.QMainWindow):
         pen = QPen(qcolor, mt, Qt.SolidLine)
         qp.setPen(pen)
         qp.drawRect(x_0, y_0, width, height)
+        if name != '':
+            qp.drawText(x_0 + 20,y_0 + 20, name)
 
 
     def drawPoints(self, qp, qcolor):
         pen = QPen(qcolor, 2)
         qp.setPen(pen)
         Visual_obj = Visual.Visual_Obj(False, self.ui.widget, 10)
-        Visual_obj.koefCulc(Facility_list[self.i].fcl)
-
-
-        for point in Facility_list[self.i].fcl.points_array:
+        Visual_obj.koefCulc(FCL_Ref.fcl)
+        for point in FCL_Ref.fcl.points_array:
             Visual_obj.coordCulc(point.x(), point.y())
             x = Visual_obj.nc.newx
             y = Visual_obj.nc.newy
             qp.drawPoint(x, y)
-
-
-
-
 
 
     # def eventFilter(self, obj, event):
@@ -100,26 +96,46 @@ class SecondWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-def generate_initial_pop(quantity):
-    for i in range(0, quantity):
+def generate_initial():
         individ = course.Individual()
         individ.create_sub_Area()
         individ.excelparser()
         individ.createSites()
+        return individ
 
-        for Site in individ.Site_list:
-            chromosome_part = individ.get_concatenated_bitstring(Site, 10)  # 32 битные строки, не трогать
-            graycode = course.binary_to_gray(chromosome_part)
-            individ.chromosome = individ.chromosome + graycode
+def generate_Qrect_Solution(hof):
+    x_list = hof[0::3]
+    y_list = hof[1::3]
+    k_list = hof[2::3]
+    QrectList = []
+
+    for i in range(len(k_list)):
+        width = round(math.sqrt(FCL_Ref.Site_list[i].S) * k_list[i])
+        height = FCL_Ref.Site_list[i].S/width
+        QrectList.append(QtCore.QRect(x_list[i], y_list[i], width, height))
+    return QrectList
 
 
-        Facility_list.append(individ)
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication([])
+
+    FCL_Ref = generate_initial()
+    GA = DI.Genetic_implement(FCL_Ref)
+    GA.Overload_classes()
+    pool = multiprocessing.Pool()
+    GA.toolbox.register("map", pool.map)
+    start_time = time.time()
+    GA.Main_autoga()
+    pool.close()
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print(GA.hof[0].fitness.values)
+    QRectSolution = generate_Qrect_Solution(GA.hof[0])
+    FCL_Ref.Site_list = QRectSolution
+
+    application = Mywindow()
+    application.show()
+    sys.exit(app.exec())
 
 
-app = QtWidgets.QApplication([])
-
-generate_initial_pop(100) #создание стартовой популяции Эксель парсится n раз ((
-
-application = Mywindow()
-application.show()
-sys.exit(app.exec())

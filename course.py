@@ -59,7 +59,7 @@ class Site(QtCore.QRect):
 
 class Individual: #создание всех объектов
     def __init__(self):
-        self.fcl = Facility(0, 0, 144, 72)
+        self.fcl = Facility(0, 0, 48, 48)
 
         self.Sub_Area_list = [] #список объектов подпространств цеха
         self.Site_list = [] #список объектов участков цеха
@@ -72,21 +72,21 @@ class Individual: #создание всех объектов
 
 
     def create_sub_Area(self): #создание
-        self.SubArea_1 = SubArea(0, 0, 72, 72) # создание подпространств
-        self.SubArea_2 = SubArea(72, 0, 72, 72)
+        self.SubArea_1 = SubArea(0, 0, 48, 48) # создание подпространств
+        self.SubArea_2 = SubArea(24, 0, 24, 48)
 
 
 
     def excelparser(self):  #парсер excel Cargo, Area
-        self.cargo = xlrd.open_workbook('Cargo1.xlsx')
-        self.Area = xlrd.open_workbook('Area1.xlsx')
+        self.cargo = xlrd.open_workbook('Cargo_test.xlsx')
+        self.Area = xlrd.open_workbook('Cargo_test.xlsx')
 
-        self.area_sheet = self.Area.sheet_by_index(0)   #листы Excel
+        self.area_sheet = self.Area.sheet_by_index(1)   #листы Excel
         self.cargo_sheet = self.cargo.sheet_by_index(0) #листы Excel
 
 
 
-        for rows in range(1, 5): #заполнение списков названий участкой и площадей участков
+        for rows in range(1, self.area_sheet.nrows): #заполнение списков названий участкой и площадей участков
             self.area_sitenamelist.append(self.area_sheet.cell_value(rows, 0))
             self.area_sitespacelist.append(self.area_sheet.cell_value(rows, 1))
 
@@ -105,38 +105,8 @@ class Individual: #создание всех объектов
             self.Site_list.append(Site(self.area_sitespacelist[i],
                                        self.area_sitenamelist[i],
                                        0, 0,
-                                       self.SubArea_1 if i < 2 else self.SubArea_2))
+                                       self.SubArea_1 if i < len(self.area_sitenamelist) else self.SubArea_2))
 
-    def get_concatenated_bitstring(self, Site, length):
-        s_koef_bit = BitArray(float=Site.square_kf, length=32).bin
-        x = format(Site.x(), 'b').zfill(length)
-        y = format(Site.y(), 'b').zfill(length)
-        concat = s_koef_bit + x + y
-        return concat
-
-
-def binary_to_gray(n):
-    """Convert Binary to Gray codeword and return it."""
-    n = int(n, 2)  # convert to int
-    n ^= (n >> 1)
-
-    # bin(n) returns n's binary representation with a '0b' prefixed
-    # the slice operation is to remove the prefix
-    return bin(n)[2:]
-
-
-def gray_to_binary(n):
-    """Convert Gray codeword to binary and return it."""
-    n = int(n, 2)  # convert to int
-
-    mask = n
-    while mask != 0:
-        mask >>= 1
-        n ^= mask
-
-    # bin(n) returns n's binary representation with a '0b' prefixed
-    # the slice operation is to remove the prefix
-    return bin(n)[2:]
 
 
 
