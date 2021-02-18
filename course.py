@@ -1,6 +1,5 @@
 import random as rnd
 from PyQt5 import QtCore
-from bitstring import BitStream, BitArray
 import xlrd, math
 rrmin = 0.5
 rrmax = 1.5
@@ -67,19 +66,21 @@ class Individual: #создание всех объектов
         self.area_sitespacelist = [] #список значений площадей цеха
         self.cargo_matrix = [] #список объектов подпространств цеха
         self.ZipList_area = zip([], []) #zip Площадей и названи
-        self.chromosome = ''
-        self.graycode = ''
+        self.dictName ={}
+        self.dictSpace ={}
+        self.dictRect = {}
 
 
     def create_sub_Area(self): #создание
         self.SubArea_1 = SubArea(0, 0, 48, 48) # создание подпространств
         self.SubArea_2 = SubArea(24, 0, 24, 48)
+        self.Sub_Area_list.extend([self.SubArea_1, self.SubArea_2])
 
 
 
     def excelparser(self):  #парсер excel Cargo, Area
-        self.cargo = xlrd.open_workbook('Cargo_test.xlsx')
-        self.Area = xlrd.open_workbook('Cargo_test.xlsx')
+        self.cargo = xlrd.open_workbook(r'C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\Cargo_test.xls')
+        self.Area = xlrd.open_workbook(r'C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\Cargo_test.xls')
 
         self.area_sheet = self.Area.sheet_by_index(1)   #листы Excel
         self.cargo_sheet = self.cargo.sheet_by_index(0) #листы Excel
@@ -105,7 +106,10 @@ class Individual: #создание всех объектов
             self.Site_list.append(Site(self.area_sitespacelist[i],
                                        self.area_sitenamelist[i],
                                        0, 0,
-                                       self.SubArea_1 if i < len(self.area_sitenamelist) else self.SubArea_2))
+                                       self.fcl))
+            #self.SubArea_1 if i < len(self.area_sitenamelist) else self.SubArea_2)
+
+
 
 
 

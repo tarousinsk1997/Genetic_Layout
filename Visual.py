@@ -22,7 +22,6 @@ class Visual_Obj:
         self.nc = NewCoord() # тут хранятся новые коордниты
         self.prop = prop # пропорциональный рисунок
         self.widget = widget
-
         self.d = d   # коэф отступа от границ экрана
         return
 
@@ -65,6 +64,3 @@ class Visual_Obj:
         C = self.widget.height()
         self.nc.newx = int(A + self.k.kx * (oldx - self.k.xmin))
         self.nc.newy = int(C + (-1 if self.prop else 1) * self.k.ky * (oldy - self.k.ymin))
-    # oldx oldy
-    #coordCulc(oldx,oldy)
-    #DrowRect(visual.nc.newx...

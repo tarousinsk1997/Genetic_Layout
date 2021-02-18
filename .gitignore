@@ -130,3 +130,6 @@ dmypy.json
 *.xml
 *.iml
 .idea/
+Cargo_test.xls
+execution.txt
+Time_stat.xls

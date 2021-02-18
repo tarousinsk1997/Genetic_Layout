@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\tarou\PycharmProjects\Genetic_Layout\UI_Form.ui'
+# Form implementation generated from reading ui file 'C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\UI_Form.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.1
 #
@@ -14,23 +14,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1759, 1264)
+        MainWindow.resize(1200, 900)
         MainWindow.setMinimumSize(QtCore.QSize(500, 0))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setMinimumSize(QtCore.QSize(200, 200))
-        self.pushButton.setObjectName("pushButton")
-        self.gridLayout.addWidget(self.pushButton, 7, 2, 1, 1)
-        self.widget = QtWidgets.QWidget(self.centralwidget)
-        self.widget.setMinimumSize(QtCore.QSize(1000, 1000))
-        self.widget.setStyleSheet("border: 3px solid black")
-        self.widget.setObjectName("widget")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.widget)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.gridLayout.addWidget(self.widget, 1, 2, 3, 4)
+        self.label_3 = QtWidgets.QLabel(self.centralwidget)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout.addWidget(self.label_3, 7, 4, 1, 1)
         self.label = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -38,12 +30,37 @@ class Ui_MainWindow(object):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 3, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(700, 0, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem, 0, 2, 1, 1)
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setMinimumSize(QtCore.QSize(200, 200))
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.gridLayout.addWidget(self.pushButton_2, 7, 5, 1, 1)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout.addItem(spacerItem, 5, 4, 1, 1)
+        self.label_2 = QtWidgets.QLabel(self.centralwidget)
+        self.label_2.setObjectName("label_2")
+        self.gridLayout.addWidget(self.label_2, 7, 3, 1, 1)
+        spacerItem1 = QtWidgets.QSpacerItem(200, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem1, 7, 6, 1, 1)
+        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit.setObjectName("lineEdit")
+        self.gridLayout.addWidget(self.lineEdit, 7, 5, 1, 1)
+        self.InputData = QtWidgets.QPushButton(self.centralwidget)
+        self.InputData.setMinimumSize(QtCore.QSize(200, 200))
+        self.InputData.setObjectName("InputData")
+        self.gridLayout.addWidget(self.InputData, 7, 2, 1, 1)
+        spacerItem2 = QtWidgets.QSpacerItem(700, 0, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem2, 0, 2, 1, 1)
+        self.Execution_GA = QtWidgets.QPushButton(self.centralwidget)
+        self.Execution_GA.setMinimumSize(QtCore.QSize(200, 200))
+        self.Execution_GA.setObjectName("Execution_GA")
+        self.gridLayout.addWidget(self.Execution_GA, 7, 8, 1, 1)
+        self.widget = QtWidgets.QWidget(self.centralwidget)
+        self.widget.setMinimumSize(QtCore.QSize(1000, 1000))
+        self.widget.setStyleSheet("border: 3px solid black")
+        self.widget.setObjectName("widget")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.widget)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.gridLayout.addWidget(self.widget, 1, 2, 3, 7)
+        self.StopButton = QtWidgets.QPushButton(self.centralwidget)
+        self.StopButton.setEnabled(True)
+        self.StopButton.setObjectName("StopButton")
+        self.gridLayout.addWidget(self.StopButton, 6, 7, 2, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -52,6 +69,19 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "Задание исходных данных синтеза"))
-        self.label.setText(_translate("MainWindow", "Синтез Компоновок цехов"))
-        self.pushButton_2.setText(_translate("MainWindow", "Выполнить"))
+        self.label_3.setText(_translate("MainWindow", "Требуемое число поколений"))
+        self.label.setText(_translate("MainWindow", "Синтез компоновок цехов"))
+        self.label_2.setText(_translate("MainWindow", "Label"))
+        self.InputData.setText(_translate("MainWindow", "Задание исходных данных синтеза"))
+        self.Execution_GA.setText(_translate("MainWindow", "Выполнить"))
+        self.StopButton.setText(_translate("MainWindow", "Стоп"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())

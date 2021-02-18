@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1759</width>
-    <height>1264</height>
+    <width>1755</width>
+    <height>1261</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -21,31 +21,11 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="7" column="2">
-     <widget class="QPushButton" name="pushButton">
-      <property name="minimumSize">
-       <size>
-        <width>200</width>
-        <height>200</height>
-       </size>
-      </property>
+    <item row="7" column="4">
+     <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>Задание исходных данных синтеза</string>
+       <string>Требуемое число поколений</string>
       </property>
-     </widget>
-    </item>
-    <item row="1" column="2" rowspan="3" colspan="4">
-     <widget class="QWidget" name="widget" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>1000</width>
-        <height>1000</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 3px solid black</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_2"/>
      </widget>
     </item>
     <item row="0" column="3">
@@ -57,7 +37,59 @@
        </font>
       </property>
       <property name="text">
-       <string>Синтез Компоновок цехов</string>
+       <string>Синтез компоновок цехов</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="4">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="7" column="3">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Label</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="6">
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Maximum</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>200</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="7" column="5">
+     <widget class="QLineEdit" name="lineEdit"/>
+    </item>
+    <item row="7" column="2">
+     <widget class="QPushButton" name="InputData">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Задание исходных данных синтеза</string>
       </property>
      </widget>
     </item>
@@ -77,8 +109,8 @@
       </property>
      </spacer>
     </item>
-    <item row="7" column="5">
-     <widget class="QPushButton" name="pushButton_2">
+    <item row="7" column="8">
+     <widget class="QPushButton" name="Execution_GA">
       <property name="minimumSize">
        <size>
         <width>200</width>
@@ -87,6 +119,30 @@
       </property>
       <property name="text">
        <string>Выполнить</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2" rowspan="3" colspan="7">
+     <widget class="QWidget" name="widget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>1000</width>
+        <height>1000</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 3px solid black</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2"/>
+     </widget>
+    </item>
+    <item row="6" column="7" rowspan="2">
+     <widget class="QPushButton" name="StopButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string>Стоп</string>
       </property>
      </widget>
     </item>
