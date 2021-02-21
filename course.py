@@ -58,7 +58,7 @@ class Site(QtCore.QRect):
 
 class Individual: #создание всех объектов
     def __init__(self):
-        self.fcl = Facility(0, 0, 48, 48)
+        self.fcl = Facility(0, 0, 50, 50)
 
         self.Sub_Area_list = [] #список объектов подпространств цеха
         self.Site_list = [] #список объектов участков цеха
@@ -66,21 +66,14 @@ class Individual: #создание всех объектов
         self.area_sitespacelist = [] #список значений площадей цеха
         self.cargo_matrix = [] #список объектов подпространств цеха
         self.ZipList_area = zip([], []) #zip Площадей и названи
-        self.dictName ={}
-        self.dictSpace ={}
+        self.dictName = {}
+        self.dictSpace = {}
         self.dictRect = {}
 
 
-    def create_sub_Area(self): #создание
-        self.SubArea_1 = SubArea(0, 0, 48, 48) # создание подпространств
-        self.SubArea_2 = SubArea(24, 0, 24, 48)
-        self.Sub_Area_list.extend([self.SubArea_1, self.SubArea_2])
-
-
-
-    def excelparser(self):  #парсер excel Cargo, Area
-        self.cargo = xlrd.open_workbook(r'C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\Cargo_test.xls')
-        self.Area = xlrd.open_workbook(r'C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\Cargo_test.xls')
+    def excelparser(self, path):  #парсер excel Cargo, Area
+        self.cargo = xlrd.open_workbook(path)
+        self.Area = xlrd.open_workbook(path)
 
         self.area_sheet = self.Area.sheet_by_index(1)   #листы Excel
         self.cargo_sheet = self.cargo.sheet_by_index(0) #листы Excel
@@ -107,7 +100,19 @@ class Individual: #создание всех объектов
                                        self.area_sitenamelist[i],
                                        0, 0,
                                        self.fcl))
-            #self.SubArea_1 if i < len(self.area_sitenamelist) else self.SubArea_2)
+
+    def linkSites(self, linklist):
+        self.Site_list = []
+        for i in range(0, len(self.area_sitenamelist)):
+            self.Site_list.append(Site(self.area_sitespacelist[i],
+                                       self.area_sitenamelist[i],
+                                       0, 0,
+                                       linklist[i] if linklist[i] != 'Default' else self.fcl))
+        print(self.Site_list)
+
+
+
+
 
 
 

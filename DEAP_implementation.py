@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import random as rnd
 import numpy as np
 import random
+from math import ceil
 from PyQt5.QtCore import QCoreApplication
 
 
@@ -30,35 +31,50 @@ class Genetic_implement:
         self.low = []
         self.up = []
         self.Stop = False
+        self.rect_info = {}
+        self.alg_flag = 0
+        self.hard_constraint = 100
+        self.soft_constraint = 1
         self.counter_UI = 0 #счетчик поколений для UI
         for i in range(0, len(self.Rect_ind.Site_list)):
             self.low.extend([self.Rect_ind.fcl.x(), self.Rect_ind.fcl.y(), self.kmin])
             self.up.extend([self.Rect_ind.fcl.x() + self.Rect_ind.fcl.width(), self.Rect_ind.fcl.y() + self.Rect_ind.fcl.height(), self.kmax])
     # гиперпараметры алгоритма
 
-    # дополнительные методы
-    def draw(self):
-        gen = self.logbook.select("gen")
-        fit_mins = self.logbook.select("min")
-        size_avgs = self.logbook.select('avg')
-        fig, ax1 = plt.subplots()
-        line1 = ax1.plot(gen, fit_mins, "b-", label="Minimum Fitness")
-        ax1.set_xlabel("Generation")
-        ax1.set_ylabel("Fitness", color="b")
-        for tl in ax1.get_yticklabels():
-            tl.set_color("b")
+    # Переопределение классов
+    def Overload_classes(self): # НЕСОВСЕМ ЯСНО МОЖНО ЛИ ПРОСТО БРАТЬ ГРАНИЦЫ ЗДАНИЯ В КАЧЕСТВЕ АРГУМЕНТОВ МУТАЦИИ И СКРЕЩИВАНИЯ
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,)) #пересечение между собой, внутри parent, войд зоны, грузопоток, обрамляющий
+        creator.create("Individual", list, fitness=creator.FitnessMin)
+        self.toolbox.register("Fill_k", rnd.uniform, self.kmin, self.kmax)
+        self.toolbox.register("Fill_x", rnd.randint, 0, self.Rect_ind.fcl.width() / 2)
+        self.toolbox.register("Fill_y", rnd.randint, 0, self.Rect_ind.fcl.height() / 2)
+        self.toolbox.register("individualCreator", tools.initCycle, creator.Individual, (self.toolbox.Fill_x,
+                                                                                            self.toolbox.Fill_y,
+                                                                                            self.toolbox.Fill_k),
+                                                                                            n=len(self.Rect_ind.Site_list))
 
-        ax2 = ax1.twinx()
-        line2 = ax2.plot(gen, size_avgs, "r-", label="Average Size")
-        ax2.set_ylabel("Size", color="r")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("r")
+        self.toolbox.register("populationCreator", tools.initRepeat, list, self.toolbox.individualCreator)
+        self.toolbox.register("evaluate", self.MinFitness)
 
-        lns = line1 + line2
-        labs = [l.get_label() for l in lns]
-        ax1.legend(lns, labs, loc="center right")
+        #self.toolbox.register("select", tools.selTournament, tournsize=self.TOURNSIZE)
+        self.toolbox.register("select", tools.selTournament, tournsize=self.TOURNSIZE)
+        self.toolbox.register("mate", tools.cxSimulatedBinaryBounded,
+                                                        low=self.low,
+                                                        up=self.up,
+                                                        eta=self.CROWDING_FACTOR)
 
-        plt.show()
+        self.toolbox.register("mutate", tools.mutPolynomialBounded,
+                                                        low=self.low,
+                                                        up=self.up,
+                                                        eta=self.CROWDING_FACTOR,
+                                                        indpb=1.0 / (len(self.Rect_ind.Site_list) * 3))
+
+        self.stats = tools.Statistics(lambda ind: ind.fitness.values)
+        self.stats.register("min", np.min)
+        self.stats.register("avg", np.mean)
+        #self.stats.register('criterions', np.array)
+        self.hof = tools.HallOfFame(self.HALL_OF_FAME_SIZE)
+    # Переопределение классов
 
     def MinFitness(self, individual): # функция вычисления приспособленности
 
@@ -67,10 +83,33 @@ class Genetic_implement:
         k_list = np.array(individual[2::3])
         cargo = np.array(self.Rect_ind.cargo_matrix).reshape((len(x_list), len(y_list)))
         self.recalculate_WH(k_list)
-        fit = (self.Interception_criteria(x_list, y_list), self.bounds_criteria(x_list, y_list), self.compact_criteria(x_list,y_list), self.mincargo_criteria(cargo, x_list, y_list))
-        if fit[0] == 0  and fit[1] == 0:
-            print(fit)
-        return fit
+        fit = (self.Interception_criteria(x_list, y_list)  + self.inbounds_criteria(x_list, y_list)) * self.hard_constraint + self.mincargo_criteria(cargo, x_list, y_list) + self.compact_criteria(x_list,y_list) * self.soft_constraint
+        #print(f'Пересечение прямоугольников =  {self.Interception_criteria(x_list, y_list)}')
+        return (fit.item(),)
+
+        # выполнение библиотечного алгоритма
+    def Main_autoga(self):
+        self.alg_flag = 0
+        if self.alg_flag == 0:
+            self.population = self.toolbox.populationCreator(n=self.POPULATION_SIZE)
+            self.population, self.logbook = eaSimple(self.population, self.toolbox,
+                                                         cxpb=self.P_CROSSOVER,
+                                                         mutpb=self.P_MUTATION,
+                                                         ngen=self.MAX_GENERATIONS, ga_obj=self,
+                                                         halloffame=self.hof,
+                                                         stats=self.stats, verbose=True)
+        elif self.alg_flag == 1:
+
+            self.population, self.logbook = eaMuPlusLambda(self.population, self.toolbox,
+                                                               mu=50,
+                                                               lambda_=60,
+                                                               cxpb=0.7,
+                                                               mutpb=0.3,
+                                                               ngen=self.MAX_GENERATIONS, ga_obj=self,
+                                                               halloffame=self.hof,
+                                                               stats=self.stats, verbose=True)
+        pass
+        # выполнение библиотечного алгоритма
 
     def mincargo_criteria(self, cargo, x_list, y_list): #здесь определяем мощность грузопотока ВНИМАНИЕ ПРОСЛЕДИТЬ ЧТОБЫ БЫЛО СООТВЕТСТВИЕ
         distance_matrix = np.zeros((len(self.Rect_ind.Site_list),len(self.Rect_ind.Site_list)))
@@ -87,57 +126,52 @@ class Genetic_implement:
 
         return np.sum(np.multiply(cargo, distance_matrix))
 
-    def bounds_criteria(self, x_list, y_list): #здесь определяем, что прямоугольники внутри Sub_Area
-        error = 0
+    def inbounds_criteria(self, x_list, y_list): #здесь определяем, что прямоугольники внутри Sub_Area
         intercept = 0
         for i in range(len(x_list)):
-            # if (x_list[i] < self.Rect_ind.Site_list[i].parent.x()) or (x_list[i] + self.Rect_ind.Site_list[i].width() > self.Rect_ind.Site_list[i].parent.x() + self.Rect_ind.Site_list[i].parent.width()):
-            #     error +=1
-            # if (y_list[i] < (self.Rect_ind.Site_list[i].parent.y()) or (y_list[i] + self.Rect_ind.Site_list[i].height() > self.Rect_ind.Site_list[i].parent.y() + self.Rect_ind.Site_list[i].parent.height())):
-            #     error +=1
             x1 = x_list[i]
             y1 = y_list[i]
             x2 = x1 + self.Rect_ind.Site_list[i].width()
             y2 = y1 + self.Rect_ind.Site_list[i].height()
-            x3 = self.Rect_ind.fcl.x()
-            y3 = self.Rect_ind.fcl.y()
-            x4 = x3 + self.Rect_ind.fcl.width()
-            y4 = y3 + self.Rect_ind.fcl.height()
+
+
+            x3 = self.Rect_ind.Site_list[i].parent.x()
+            y3 = self.Rect_ind.Site_list[i].parent.y()
+
+            width = self.Rect_ind.Site_list[i].parent.width()
+            height =self.Rect_ind.Site_list[i].parent.height()
+
+           # x3, y3, width, height = change_coord(x3,y3,width,height)
+
+            x4 = x3 + width
+            y4 = y3 + height
+
             left = max(x1, x3)
             top = min(y2, y4)
             right = min(x2, x4)
             bottom = max(y1, y3)
             width = right - left
             height = top - bottom
-            if not (width < 0 or height < 0):
+            if (width < 0 or height < 0):
                 intercept += width * height
+
         return intercept
 
     def Interception_criteria(self, x_list, y_list): #здесь определяем пересечение прямоугольников
-        error = 0
         intercept = 0
         for i in range(0, len(x_list)):
             for j in range(0, len(x_list)):
                 if i !=j:
-                    # x1_min = x_list[i]
-                    # x2_min = x_list[j]
-                    # y1_min = y_list[i]
-                    # y2_min = y_list[j]
-                    # r_ymin = max(y1_min, y2_min)
-                    # r_xmin = max(x1_min, x2_min)
-                    # r_ymax = min(y1_min + self.Rect_ind.Site_list[i].height(), y2_min + self.Rect_ind.Site_list[j].height())
-                    # r_xmax = min(x1_min + self.Rect_ind.Site_list[i].width(), x2_min + self.Rect_ind.Site_list[j].width())
-                    # if (r_ymax >= r_ymin) and (r_xmax >= r_xmin):
-                    #     error += 1
-
                     x1 = x_list[i]
                     y1 = y_list[i]
                     x2 = x_list[i] + self.Rect_ind.Site_list[i].width()
                     y2 = y_list[i] + self.Rect_ind.Site_list[i].height()
+
                     x3 = x_list[j]
                     y3 = y_list[j]
                     x4 = x_list[j] + self.Rect_ind.Site_list[j].width()
-                    y4 = y_list[j] + self.Rect_ind.Site_list[i].height()
+                    y4 = y_list[j] + self.Rect_ind.Site_list[j].height()
+
                     left = max(x1, x3)
                     top = min(y2, y4)
                     right = min(x2, x4)
@@ -146,12 +180,42 @@ class Genetic_implement:
                     height = top - bottom
                     if not (width < 0 or height < 0):
                         intercept += width * height
-        return intercept
+        intercept_1 = 0
+
+        # if len(self.rect_info) != 0:
+        #     for i in range(0, len(x_list)):
+        #         for j in range(len(self.rect_info)):
+        #             if self.rect_info[f'{j}'][2] == 'Дорога' or self.rect_info[f'{j}'][2] == 'Пустота':
+        #                 x1 = x_list[i]
+        #                 y1 = y_list[i]
+        #                 x2 = x1 + self.Rect_ind.Site_list[i].width()
+        #                 y2 = x2 + self.Rect_ind.Site_list[i].height()
+        #
+        #                 x3 = self.rect_info[f'{j}'][0].x()
+        #                 y3 = self.rect_info[f'{j}'][0].y()
+        #                 width = self.rect_info[f'{j}'][0].width()
+        #                 height = self.rect_info[f'{j}'][0].height()
+        #
+        #                 x3, y3, width, height = change_coord(x3, y3, width, height)
+        #
+        #                 x4 = x3 + width
+        #                 y4 = y3 + height
+        #
+        #                 left = max(x1, x3)
+        #                 top = min(y2, y4)
+        #                 right = min(x2, x4)
+        #                 bottom = max(y1, y3)
+        #                 width = right - left
+        #                 height = top - bottom
+        #                 if not (width < 0 or height < 0):
+        #                     intercept_1 += width * height
+
+        return intercept + self.void_zones(x_list, y_list)
 
     def recalculate_WH(self, k_list): #перевычисление ширины и высоты Site
         for i in range(len(k_list)):
-            self.Rect_ind.Site_list[i].setWidth(int(math.sqrt(self.Rect_ind.Site_list[i].S) * k_list[i]))
-            self.Rect_ind.Site_list[i].setHeight(int(self.Rect_ind.Site_list[i].S / self.Rect_ind.Site_list[i].width()))
+            self.Rect_ind.Site_list[i].setWidth(ceil(math.sqrt(self.Rect_ind.Site_list[i].S) * k_list[i]))
+            self.Rect_ind.Site_list[i].setHeight(ceil(self.Rect_ind.Site_list[i].S / self.Rect_ind.Site_list[i].width()))
 
     def compact_criteria(self, x_list, y_list):
         x_max = max(x_list)
@@ -160,57 +224,63 @@ class Genetic_implement:
         y_min = min(y_list)
         return (x_max - x_min) * (y_max - y_min)
 
+    def void_zones(self, x_list, y_list):
+        intercept = 0
+        if len(self.rect_info) !=0:
+            for i in range(0, len(x_list)):
+                for j in range(len(self.rect_info)):
+                    if self.rect_info[f'{j}'][2] == 'Дорога' or self.rect_info[f'{j}'][2] == 'Пустота':
+                        x1 = x_list[i]
+                        y1 = y_list[i]
+                        x2 = x1 + self.Rect_ind.Site_list[i].width()
+                        y2 = x2 + self.Rect_ind.Site_list[i].height()
+
+                        x3 = self.rect_info[f'{j}'][0].x()
+                        y3 = self.rect_info[f'{j}'][0].y()
+                        width = self.rect_info[f'{j}'][0].width()
+                        height = self.rect_info[f'{j}'][0].height()
+
+                        x3, y3, width, height = change_coord(x3, y3, width, height)
+
+                        x4 = x3 + width
+                        y4 = y3 + height
+
+                        left = max(x1, x3)
+                        top = min(y2, y4)
+                        right = min(x2, x4)
+                        bottom = max(y1, y3)
+                        width = right - left
+                        height = top - bottom
+                        if not (width < 0 or height < 0):
+                            intercept += width * height
+        return intercept
 
 
-    # Переопределение классов
-    def Overload_classes(self): # НЕСОВСЕМ ЯСНО МОЖНО ЛИ ПРОСТО БРАТЬ ГРАНИЦЫ ЗДАНИЯ В КАЧЕСТВЕ АРГУМЕНТОВ МУТАЦИИ И СКРЕЩИВАНИЯ
-        creator.create("FitnessMin", base.Fitness, weights=(-1, +1, -1, -5)) #НУЖЕН ЛИ crator'у self
-        creator.create("Individual", list, fitness=creator.FitnessMin)
-        self.toolbox.register("Fill_k", rnd.uniform, self.kmin, self.kmax)
-        self.toolbox.register("Fill_x", rnd.randint, 0, self.Rect_ind.fcl.width() / 2)
-        self.toolbox.register("Fill_y", rnd.randint, 0, self.Rect_ind.fcl.height() / 2)
-        self.toolbox.register("individualCreator", tools.initCycle, creator.Individual, (self.toolbox.Fill_x,
-                                                                                            self.toolbox.Fill_y,
-                                                                                            self.toolbox.Fill_k),
-                                                                                            n=len(self.Rect_ind.Site_list))
 
-        self.toolbox.register("populationCreator", tools.initRepeat, list, self.toolbox.individualCreator)
-        self.toolbox.register("evaluate", self.MinFitness)
 
-        self.toolbox.register("select", tools.selTournament, tournsize=self.TOURNSIZE)
-        self.toolbox.register("mate", tools.cxSimulatedBinaryBounded,
-                                                        low=self.low,
-                                                        up=self.up,
-                                                        eta=self.CROWDING_FACTOR)
+    # дополнительные методы
+    def draw(self):
+        gen = self.logbook.select("gen")
+        fit_mins = self.logbook.select("min")
+        size_avgs = self.logbook.select('avg')
+        fig, ax1 = plt.subplots()
+        line1 = ax1.plot(gen, fit_mins, "b-", label="Minimum Fitness")
+        ax1.set_xlabel("Generation")
+        ax1.set_ylabel("Fitness", color="b")
+        for tl in ax1.get_yticklabels():
+            tl.set_color("b")
 
-        self.toolbox.register("mutate", tools.mutPolynomialBounded,
-                                                        low=self.low,
-                                                        up=self.up,
-                                                        eta=self.CROWDING_FACTOR,
-                                                        indpb=1.0 / (len(self.Rect_ind.Site_list) * 3))
+        ax2 = ax1.twinx()
+        line2 = ax2.plot(gen, size_avgs, "r-", label="Average Fitness")
+        #ax2.set_ylabel("Size", color="r")
+        for tl in ax2.get_yticklabels():
+            tl.set_color("r")
 
-        self.stats = tools.Statistics(lambda ind: ind.fitness.values)
-        self.stats.register("min", np.min)
-        self.stats.register("avg", np.mean)
-        self.stats.register('criterions', np.array)
-        self.hof = tools.HallOfFame(self.HALL_OF_FAME_SIZE)
-    # Переопределение классов
+        lns = line1 + line2
+        labs = [l.get_label() for l in lns]
+        ax1.legend(lns, labs, loc="center right")
 
-    # выполнение библиотечного алгоритма
-    def Main_autoga(self):
-        self.population = self.toolbox.populationCreator(n= self.POPULATION_SIZE)
-        self.population, self.logbook = eaSimple(self.population, self.toolbox,
-                                                  cxpb=self.P_CROSSOVER,
-                                                  mutpb = self.P_MUTATION,
-                                                  ngen=self.MAX_GENERATIONS, ga_obj=self,
-                                                  halloffame=self.hof,
-                                                  stats=self.stats, verbose=True)
-
-        maxFitnessValues, meanFitnessValue = self.logbook.select("min", "mean")
-
-        pass
-    # выполнение библиотечного алгоритма
-
+        plt.show()
 
 def eaSimple(population, toolbox, cxpb, mutpb, ngen, ga_obj, stats=None,
              halloffame=None, verbose=__debug__,):
@@ -264,6 +334,169 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, ga_obj, stats=None,
 
     return population, logbook
 
+def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, ga_obj,
+                   stats=None, halloffame=None, verbose=__debug__):
+    """This is the :math:`(\mu + \lambda)` evolutionary algorithm.
+
+    :param population: A list of individuals.
+    :param toolbox: A :class:`~deap.base.Toolbox` that contains the evolution
+                    operators.
+    :param mu: The number of individuals to select for the next generation.
+    :param lambda\_: The number of children to produce at each generation.
+    :param cxpb: The probability that an offspring is produced by crossover.
+    :param mutpb: The probability that an offspring is produced by mutation.
+    :param ngen: The number of generation.
+    :param stats: A :class:`~deap.tools.Statistics` object that is updated
+                  inplace, optional.
+    :param halloffame: A :class:`~deap.tools.HallOfFame` object that will
+                       contain the best individuals, optional.
+    :param verbose: Whether or not to log the statistics.
+    :returns: The final population
+    :returns: A class:`~deap.tools.Logbook` with the statistics of the
+              evolution.
+
+    The algorithm takes in a population and evolves it in place using the
+    :func:`varOr` function. It returns the optimized population and a
+    :class:`~deap.tools.Logbook` with the statistics of the evolution. The
+    logbook will contain the generation number, the number of evaluations for
+    each generation and the statistics if a :class:`~deap.tools.Statistics` is
+    given as argument. The *cxpb* and *mutpb* arguments are passed to the
+    :func:`varOr` function. The pseudocode goes as follow ::
+
+        evaluate(population)
+        for g in range(ngen):
+            offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
+            evaluate(offspring)
+            population = select(population + offspring, mu)
+
+    First, the individuals having an invalid fitness are evaluated. Second,
+    the evolutionary loop begins by producing *lambda_* offspring from the
+    population, the offspring are generated by the :func:`varOr` function. The
+    offspring are then evaluated and the next generation population is
+    selected from both the offspring **and** the population. Finally, when
+    *ngen* generations are done, the algorithm returns a tuple with the final
+    population and a :class:`~deap.tools.Logbook` of the evolution.
+
+    This function expects :meth:`toolbox.mate`, :meth:`toolbox.mutate`,
+    :meth:`toolbox.select` and :meth:`toolbox.evaluate` aliases to be
+    registered in the toolbox. This algorithm uses the :func:`varOr`
+    variation.
+    """
+    logbook = tools.Logbook()
+    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+    # Evaluate the individuals with an invalid fitness
+    invalid_ind = [ind for ind in population if not ind.fitness.valid]
+    fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+
+    if halloffame is not None:
+        halloffame.update(population)
+
+    record = stats.compile(population) if stats is not None else {}
+    logbook.record(gen=0, nevals=len(invalid_ind), **record)
+    if verbose:
+        print(logbook.stream)
+
+    # Begin the generational process
+    gen = 0
+    while not ga_obj.Stop:  # gen < ngen
+        QCoreApplication.processEvents()
+        gen += 1
+        # Vary the population
+        offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
+
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        # Update the hall of fame with the generated individuals
+        if halloffame is not None:
+            halloffame.update(offspring)
+
+        # Select the next generation population
+        population[:] = toolbox.select(population + offspring, mu)
+
+        # Update the statistics with the new population
+        record = stats.compile(population) if stats is not None else {}
+        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        if verbose:
+            print(logbook.stream)
+
+    return population, logbook
+
+
+def change_coord(x1,y1,w1,h1):
+    x = x1
+    y = y1
+    w = w1
+    h = h1
+    if w < 0 and h > 0:
+        x = x + w
+    elif w > 0 and h < 0:
+        y = y + h
+    elif w < 0 and h < 0:
+        x = x + w
+        y = y + h
+    w, h = abs(w), abs(h)
+    return x,y,w,h
+def varOr(population, toolbox, lambda_, cxpb, mutpb):
+    """Part of an evolutionary algorithm applying only the variation part
+    (crossover, mutation **or** reproduction). The modified individuals have
+    their fitness invalidated. The individuals are cloned so returned
+    population is independent of the input population.
+
+    :param population: A list of individuals to vary.
+    :param toolbox: A :class:`~deap.base.Toolbox` that contains the evolution
+                    operators.
+    :param lambda\_: The number of children to produce
+    :param cxpb: The probability of mating two individuals.
+    :param mutpb: The probability of mutating an individual.
+    :returns: The final population.
+
+    The variation goes as follow. On each of the *lambda_* iteration, it
+    selects one of the three operations; crossover, mutation or reproduction.
+    In the case of a crossover, two individuals are selected at random from
+    the parental population :math:`P_\mathrm{p}`, those individuals are cloned
+    using the :meth:`toolbox.clone` method and then mated using the
+    :meth:`toolbox.mate` method. Only the first child is appended to the
+    offspring population :math:`P_\mathrm{o}`, the second child is discarded.
+    In the case of a mutation, one individual is selected at random from
+    :math:`P_\mathrm{p}`, it is cloned and then mutated using using the
+    :meth:`toolbox.mutate` method. The resulting mutant is appended to
+    :math:`P_\mathrm{o}`. In the case of a reproduction, one individual is
+    selected at random from :math:`P_\mathrm{p}`, cloned and appended to
+    :math:`P_\mathrm{o}`.
+
+    This variation is named *Or* because an offspring will never result from
+    both operations crossover and mutation. The sum of both probabilities
+    shall be in :math:`[0, 1]`, the reproduction probability is
+    1 - *cxpb* - *mutpb*.
+    """
+    assert (cxpb + mutpb) <= 1.0, (
+        "The sum of the crossover and mutation probabilities must be smaller "
+        "or equal to 1.0.")
+
+    offspring = []
+    for _ in range(lambda_):
+        op_choice = random.random()
+        if op_choice < cxpb:            # Apply crossover
+            ind1, ind2 = list(map(toolbox.clone, random.sample(population, 2)))
+            ind1, ind2 = toolbox.mate(ind1, ind2)
+            del ind1.fitness.values
+            offspring.append(ind1)
+        elif op_choice < cxpb + mutpb:  # Apply mutation
+            ind = toolbox.clone(random.choice(population))
+            ind, = toolbox.mutate(ind)
+            del ind.fitness.values
+            offspring.append(ind)
+        else:                           # Apply reproduction
+            offspring.append(random.choice(population))
+
+    return offspring
 def varAnd(population, toolbox, cxpb, mutpb):
 
     offspring = [toolbox.clone(ind) for ind in population]

@@ -1,0 +1,112 @@
+from PyQt5 import QtCore, QtGui, QtWidgets
+import course, os
+from PyQt5.QtWidgets import QTableWidgetItem, QTableView
+from PyQt5.QtCore import Qt
+
+'''
+                           МОЙ БЛОК НИЖЕ КОПИРОВАТЬ ПЕРЕД executesecond.bat 
+                           '''
+        self.tableWidget_3.setMouseTracking(True)
+        self.ExcelImportBtn.clicked.connect(self.xlsx_open_dialog)
+        self.checkBox_spaceedit.isChecked()
+        self.LinkBtn.clicked.connect(self.linkArea)
+        self.SIte_Table.itemEntered.connect(self.refresh_combobox)
+        self.SIte_Table.setMouseTracking(True)
+
+        #self.PreExitBtn.clicked.connect(self.)
+
+
+        # Хранение данных
+        self.FCL_Ref = self.generate_initial(os.path.dirname(__file__) + r'\Cargo_test.xls')
+        self.linklist = []
+
+
+    def xlsx_open_dialog(self):
+        fname = QtWidgets.QFileDialog.getOpenFileName()
+        self.FCL_Ref = self.generate_initial(fname[0])
+        self.pastexlsxTable()
+
+    def pastexlsxTable(self):
+        self.SIte_Table.setColumnCount(3)  # Устанавливаем три колонки
+        self.SIte_Table.setRowCount(len(self.FCL_Ref.Site_list))  # и одну строку в таблице
+
+        # Устанавливаем заголовки таблицы
+        self.SIte_Table.setHorizontalHeaderLabels(["Название", "Площадь", 'Принадлежность'])
+
+        # Устанавливаем всплывающие подсказки на заголовки
+        # self.SIte_Table.horizontalHeaderItem(0).setToolTip("Column 1 ")
+        # self.SIte_Table.horizontalHeaderItem(1).setToolTip("Column 2 ")
+        # self.SIte_Table.horizontalHeaderItem(2).setToolTip("Column 3 ")
+
+        # Устанавливаем выравнивание на заголовки
+        self.SIte_Table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
+        self.SIte_Table.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
+        self.SIte_Table.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
+
+        # заполняем первую строку
+        for i in range(len(self.FCL_Ref.Site_list)):
+            self.SIte_Table.setItem(i, 0, QTableWidgetItem(str(self.FCL_Ref.area_sitenamelist[i])))
+            self.SIte_Table.setItem(i, 1, QTableWidgetItem(str(self.FCL_Ref.area_sitespacelist[i])))
+            combo = QtWidgets.QComboBox()
+            combo.addItem('Default')
+            self.SIte_Table.setCellWidget(i, 2, combo)
+
+        # делаем ресайз колонок по содержимому
+        self.SIte_Table.resizeColumnsToContents()
+
+    def pastAreaTable(self, widget, info, cols=3, rows=10):  # не доделано заполнение
+        widget.setColumnCount(cols)  # Устанавливаем три колонки
+        widget.setRowCount(rows)  # и одну строку в таблице
+        widget.setHorizontalHeaderLabels(["Название", "Площадь", 'Тип пространства'])
+
+        widget.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
+        widget.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
+        widget.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
+
+        for i in range(len(info)):
+            widget.setItem(i, 0, QTableWidgetItem(str(info[i][1])))
+            width = info[i][0].width()
+            height = info[i][0].height()
+            S = abs(width * height)
+            widget.setItem(i, 1, QTableWidgetItem(str(S)))
+            widget.setItem(i, 2, QTableWidgetItem(str(info[i][2])))
+
+            widget.resizeColumnsToContents()
+
+    # def completePre(self):
+    #     pass
+
+    def linkArea(self):
+        linklist = []
+        for i in range(self.SIte_Table.rowCount()):
+           linklist.append((i, self.SIte_Table.item(i,2).text()))
+           print(self.SIte_Table.item(i, 2).text())
+           i += 1
+        self.linklist = linklist
+        print(self.linklist)
+
+
+    def refresh_combobox(self, item):
+        if self.Areas_Table.rowCount() != 0:
+            for j in range(self.SIte_Table.rowCount()):
+                self.SIte_Table.cellWidget(j, 2).clear()
+                self.SIte_Table.cellWidget(j, 2).addItem('Default')
+                for i in range(self.Areas_Table.rowCount()):
+                    if self.Areas_Table.item(i, 2).text() == "Подпространство":
+                        self.SIte_Table.cellWidget(j, 2).addItem(self.Areas_Table.item(i, 0).text())
+
+
+
+
+
+
+
+
+
+
+    def generate_initial(self, path):
+        individ = course.Individual()
+        #individ.create_sub_Area()
+        individ.excelparser(path)
+        individ.createSites()
+        return individ

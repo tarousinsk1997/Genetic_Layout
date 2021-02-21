@@ -1,0 +1,1 @@
+C:\Users\tarou\AppData\Local\Programs\Python\Python39\Scripts\pyuic5.exe -x "C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\PreProcessWindow.ui" -o "C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\PreProcessWindow.py"
