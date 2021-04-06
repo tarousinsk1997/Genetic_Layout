@@ -699,13 +699,14 @@ def change_coord(x1, y1, w1, h1):
 
 
 def main():
-    app = QtWidgets.QApplication([])
-    application = Mywindow()
-    screenresolution = app.desktop().screenGeometry()
     if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
         QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
         QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+    app = QtWidgets.QApplication([])
+    application = Mywindow()
+    screenresolution = app.desktop().screenGeometry()
+
     application.show()
     sys.exit(app.exec())
 
