@@ -1,0 +1,3 @@
+
+Iteration 0:
+Time of execution before stop criteria: 53.165366649627686 sec

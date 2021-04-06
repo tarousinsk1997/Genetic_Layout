@@ -9,7 +9,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import course, os
-from PyQt5.QtWidgets import QTableWidgetItem, QTableView
+from PyQt5.QtWidgets import QTableWidgetItem, QTableView, QMessageBox
 from PyQt5.QtCore import Qt
 
 class Ui_PreProcessWindow(object):
@@ -92,11 +92,13 @@ class Ui_PreProcessWindow(object):
         '''
                                    МОЙ БЛОК НИЖЕ КОПИРОВАТЬ ПЕРЕД executesecond.bat 
                                    '''
+        self.PreExitBtn.setEnabled(False)
         self.tableWidget_3.setMouseTracking(True)
         self.ExcelImportBtn.clicked.connect(self.xlsx_open_dialog)
         self.checkBox_spaceedit.isChecked()
         self.PreExitBtn.clicked.connect(self.linkAreaExit)
         self.SIte_Table.itemEntered.connect(self.refresh_combobox)
+        self.Areas_Table.cellPressed.connect(self.deleteRow)
         self.SIte_Table.setMouseTracking(True)
 
         # self.PreExitBtn.clicked.connect(self.)
@@ -104,12 +106,18 @@ class Ui_PreProcessWindow(object):
         # Хранение данных
         self.rect_edit = {}
         self.linklist = []
+        self.Passedchecks = False
+        self.FCL_rect = ''
 
     def xlsx_open_dialog(self):
         fname = QtWidgets.QFileDialog.getOpenFileName()
         if not fname[0] == '':
             self.FCL_Ref = self.generate_initial(fname[0])
             self.pastexlsxTable()
+        self.PreExitBtn.setEnabled(True)
+
+
+
 
     def pastexlsxTable(self):
         self.SIte_Table.setColumnCount(3)  # Устанавливаем три колонки
@@ -152,7 +160,7 @@ class Ui_PreProcessWindow(object):
             widget.setItem(i, 0, QTableWidgetItem(str(info[f'{i}'][1])))
             width = info[f'{i}'][0].width()
             height = info[f'{i}'][0].height()
-            S = abs(width * height)
+            S = round(abs(width * height), 2)
             widget.setItem(i, 1, QTableWidgetItem(str(S)))
             widget.setItem(i, 2, QTableWidgetItem(str(info[f'{i}'][2])))
 
@@ -161,28 +169,37 @@ class Ui_PreProcessWindow(object):
         # def completePre(self):
         #     pass
 
+    def deleteRow(self, row):
+        self.Areas_Table.removeRow(row)
+        del self.rect_edit[f'{row}']
+
+
 
     def linkAreaExit(self):
         linklist = []
         qrect = ''
         counter = 0
+        x,y,w,h = 0,0,0,0
         for i in range(self.SIte_Table.rowCount()):
             if len(self.rect_edit) != 0:
                 for j in range(len(self.rect_edit)):
-                    print(self.rect_edit[f'{j}'][1])
-                    print(self.SIte_Table.cellWidget(i,2).currentText())
                     if self.rect_edit[f'{j}'][1] == self.SIte_Table.cellWidget(i,2).currentText():
                         qrect = self.rect_edit[f'{j}'][0]
+                        x, y, w, h = qrect.x(), qrect.y(), qrect.width(), qrect.height()
+                        x, y, w,h = change_coord(x,y, w, h)
                         counter += 1
                 if counter != 0:
-                    linklist.append(qrect)
+                    linklist.append(course.SubArea(x, y, w, h, self.SIte_Table.cellWidget(i,2).currentText()))
                     counter = 0
                 else:
-                    linklist.append('Default')
-
+                    linklist.append(self.FCL_Ref.fcl)
             else:
-                linklist.append('Default')
+                linklist.append(self.FCL_Ref.fcl)
+
+        self.Passedchecks = self.enough_space(self.FCL_Ref)
         self.linklist = linklist
+
+
 
 
 
@@ -202,6 +219,75 @@ class Ui_PreProcessWindow(object):
         individ.createSites()
         return individ
 
+    def enough_space(self, FCL_ref):
+        Square1 = FCL_ref.fcl.width() * FCL_ref.fcl.height()
+        squaresumSites = 0
+        passed = False
+        mbox = QMessageBox()
+        for i in range(len(FCL_ref.area_sitespacelist)):
+            squaresumSites += FCL_ref.area_sitespacelist[i]
+        Square2 = 0
+        if self.Areas_Table.rowCount() != 0:
+            for i in range(self.Areas_Table.rowCount()):
+                Square2 += float(self.Areas_Table.item(i, 1).text())
+
+        if self.SIte_Table.rowCount() != 0 and self.Areas_Table.rowCount() != 0:
+            for i in range(len(FCL_ref.area_sitespacelist)):
+                for j in range(self.Areas_Table.rowCount()):
+                    if self.SIte_Table.cellWidget(i, 2).currentText() != 'Default' and self.Areas_Table.item(j,0).text() == self.SIte_Table.cellWidget(i, 2).currentText():
+                        square1 = float(self.Areas_Table.item(j, 1).text())
+                        square2 = float(self.SIte_Table.item(i, 1).text())
+                        #print(f'----{square1}-------{square2}')
+                        if square2 < square1:
+                            passed = True
+                        else:
+                            mbox.setText('Площадь размещаемых участков превышает площадь подпространства')
+                            mbox.exec_()
+                            break
+                    else:
+                        passed = True
+
+        if Square1 - Square2 + self.intercept_criteria() > squaresumSites * 1.1 and passed:
+            return True
+        else:
+            mbox.setText('Участки не вписываются в заданную конфигурацию цеха')
+            mbox.exec_()
+            return False
+
+    def intercept_criteria(self):  # здесь определяем, что прямоугольники внутри Sub_Area
+        intercept = 0
+        if self.Areas_Table.rowCount() != 0:
+            for i in range(self.Areas_Table.rowCount()):
+                for j in range(self.Areas_Table.rowCount()):
+                    if i != j:
+                        x1 = self.rect_edit[f'{j}'][0].x()
+                        y1 = self.rect_edit[f'{j}'][0].y()
+                        width1 = self.rect_edit[f'{j}'][0].width()
+                        height1 = self.rect_edit[f'{j}'][0].height()
+                        x1, y1, width1, height1 = change_coord(x1, y1, width1, height1)
+                        x2 = x1 + width1
+                        y2 = y1 + height1
+
+                        x3 = self.rect_edit[f'{i}'][0].x()
+                        y3 = self.rect_edit[f'{i}'][0].x()
+                        width = self.rect_edit[f'{i}'][0].width()
+                        height = self.rect_edit[f'{i}'][0].height()
+                        x3, y3, width, height = change_coord(x3, y3, width, height)
+
+                        x4 = x3 + width
+                        y4 = y3 + height
+
+                        left = max(x1, x3)
+                        top = min(y2, y4)
+                        right = min(x2, x4)
+                        bottom = max(y1, y3)
+                        width = right - left
+                        height = top - bottom
+                        if (width < 0 or height < 0):
+                            intercept += width * height
+
+        return intercept
+
     def retranslateUi(self, PreProcessWindow):
         _translate = QtCore.QCoreApplication.translate
         PreProcessWindow.setWindowTitle(_translate("PreProcessWindow", "Form"))
@@ -215,6 +301,21 @@ class Ui_PreProcessWindow(object):
         self.radioSubArea.setText(_translate("PreProcessWindow", "Задание подпространств"))
         self.DeleteAreasBtn.setText(_translate("PreProcessWindow", "Удалить выделенный участок"))
         self.PreExitBtn.setText(_translate("PreProcessWindow", "Завершение"))
+
+def change_coord(x1, y1, w1, h1):
+    x = x1
+    y = y1
+    w = w1
+    h = h1
+    if w < 0 and h > 0:
+        x = x + w
+    elif w > 0 and h < 0:
+        y = y + h
+    elif w < 0 and h < 0:
+        x = x + w
+        y = y + h
+    w, h = abs(w), abs(h)
+    return x, y, w, h
 
 
 if __name__ == "__main__":

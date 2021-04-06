@@ -1,0 +1,33 @@
+
+Iteration 0:
+Time of execution before stop criteria: 28.883239030838013 sec
+Iteration 1:
+Time of execution before stop criteria: 33.38227391242981 sec
+Iteration 2:
+Time of execution before stop criteria: 34.82519769668579 sec
+Iteration 3:
+Time of execution before stop criteria: 30.811954021453857 sec
+Iteration 4:
+Time of execution before stop criteria: 35.38861870765686 sec
+Iteration 5:
+Time of execution before stop criteria: 39.97786569595337 sec
+Iteration 6:
+Time of execution before stop criteria: 26.827044010162354 sec
+Iteration 7:
+Time of execution before stop criteria: 31.198291063308716 sec
+Iteration 8:
+Time of execution before stop criteria: 43.427202463150024 sec
+Iteration 9:
+Time of execution before stop criteria: 42.401912450790405 sec
+Iteration 10:
+Time of execution before stop criteria: 29.08783745765686 sec
+Iteration 11:
+Time of execution before stop criteria: 31.43249821662903 sec
+Iteration 12:
+Time of execution before stop criteria: 45.35059189796448 sec
+Iteration 13:
+Time of execution before stop criteria: 39.98297333717346 sec
+Iteration 14:
+Time of execution before stop criteria: 41.30820822715759 sec
+Mean time of execution before stop criteria: 35.619047212600705 sec
+Mean Fitness: 2019.9845179107433     Min Fitness: 1492.422044841199

@@ -1,0 +1,52 @@
+    def execute_with_timer(self):
+        fitness = []
+        path = r'C:\Users\tarou\Documents\Pycharm Projects\Genetic_Layout\Statistics\eaSimple\Param_set_3\mean_time.txt'
+
+        time_list = []
+        iterlist = []
+        fitness = []
+        text_file = open(path, 'w')
+
+        text_file.write('')
+        text_file.close()
+
+        for i in range(15):
+            self.FCL_Ref = self.generate_initial()
+            if self.ui.TestCheckBox.isChecked() == False:
+                rnd.seed(None)
+                if len(self.ui_1.linklist) != 0:
+                    self.FCL_Ref.linkSites(self.ui_1.linklist)
+            else:
+                rnd.seed(42)
+            self.GA = DI.Genetic_implement(self.FCL_Ref)
+            self.GA.Overload_classes()
+            #self.GA.MAX_GENERATIONS = int(self.ui.lineEdit.text())
+            start_time = time.time()
+            self.GA.Main_autoga()
+            QRectSolution = self.generate_Qrect_Solution(self.GA.hof[0])
+            self.FCL_Ref.Site_list = QRectSolution
+            self.FCL_Ref.dictName, self.FCL_Ref.dictSpace, self.FCL_Ref.dictRect = self.tooltipData()
+            self.ui.label_2.setText("Выполнено")
+            self.ui.widget.update()
+
+            stop_time = time.time()
+            duration = stop_time - start_time
+            time_list.append(duration)
+            iterlist.append(i)
+            sub = self.GA.mincargo_criteria(x_list=self.GA.hof[0][0::3], y_list=self.GA.hof[0][1::3], cargo=np.array(self.GA.Rect_ind.cargo_matrix).reshape((len(self.GA.hof[0][0::3]), len(self.GA.hof[0][0::3]))))
+            fitness.append(sub)
+            text_file = open(path, 'a')
+            text_file.write('\n')
+            text_file.write(f'Iteration {i}:')
+            text_file.write('\n')
+            text_file.write(f'Time of execution before stop criteria: {duration} sec')
+            text_file.close()
+
+        text_file = open(path, 'a')
+        text_file.write('\n')
+        text_file.write(f'Mean time of execution before stop criteria: {np.mean(np.array(time_list))} sec')
+        text_file.write('\n')
+        text_file.write(f'Mean Fitness: {np.mean(fitness)}     Min Fitness: {np.min(fitness)}')
+        text_file.close()
+        #self.GA.draw()
+        self.Draw_stats(time_list, fitness, iterlist)
