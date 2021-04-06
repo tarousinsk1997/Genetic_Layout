@@ -701,6 +701,8 @@ def change_coord(x1, y1, w1, h1):
 def main():
     app = QtWidgets.QApplication([])
     application = Mywindow()
+    screenresolution = app.desktop().screenGeometry()
+    application.setGeometry(100, 100, screenresolution.width() / 2, screenresolution.height() / 2)
     application.show()
     sys.exit(app.exec())
 
