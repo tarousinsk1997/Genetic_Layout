@@ -702,7 +702,7 @@ def main():
     app = QtWidgets.QApplication([])
     application = Mywindow()
     screenresolution = app.desktop().screenGeometry()
-    application.setGeometry(100, 100, screenresolution.width() / 2, screenresolution.height() / 2)
+    application.setGeometry(100, 100, screenresolution.width() / 2, screenresolution.height() / 3)
     application.show()
     sys.exit(app.exec())
 
