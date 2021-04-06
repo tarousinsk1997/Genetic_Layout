@@ -702,8 +702,10 @@ def main():
     app = QtWidgets.QApplication([])
     application = Mywindow()
     screenresolution = app.desktop().screenGeometry()
-    application.setGeometry(100,100, screenresolution.width() / 2, screenresolution.height() / 2)
-    # application.ui.centralwidget.setGeometry()
+    if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     application.show()
     sys.exit(app.exec())
 
