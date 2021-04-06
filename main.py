@@ -21,6 +21,7 @@ class Mywindow(QtWidgets.QMainWindow):
         super(Mywindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle('Синтез компоновок цехов')
         self.i = 2
         self.w = None
 
