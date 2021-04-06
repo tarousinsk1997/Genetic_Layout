@@ -2,24 +2,19 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>1755</width>
-    <height>1294</height>
-   </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>500</width>
-    <height>0</height>
-   </size>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="8" column="2">
      <widget class="QPushButton" name="InputData">
@@ -36,10 +31,16 @@
     </item>
     <item row="1" column="2" rowspan="3" colspan="8">
      <widget class="QWidget" name="widget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
-        <width>1000</width>
-        <height>1000</height>
+        <width>500</width>
+        <height>500</height>
        </size>
       </property>
       <property name="styleSheet">
@@ -50,6 +51,12 @@
     </item>
     <item row="0" column="3">
      <widget class="QLabel" name="label">
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>200</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <family>Times New Roman</family>
@@ -67,7 +74,7 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
+       <enum>QSizePolicy::Preferred</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -208,7 +215,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1755</width>
+     <width>1210</width>
      <height>21</height>
     </rect>
    </property>
