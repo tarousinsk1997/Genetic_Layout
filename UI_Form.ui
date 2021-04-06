@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>1057</height>
+    <width>878</width>
+    <height>657</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,15 +32,15 @@
       <item>
        <widget class="QWidget" name="widget" native="true">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>800</width>
-          <height>800</height>
+          <width>400</width>
+          <height>400</height>
          </size>
         </property>
         <property name="styleSheet">
@@ -57,7 +57,7 @@
         <item>
          <widget class="QPushButton" name="InputData">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -93,6 +93,12 @@
           </item>
           <item row="3" column="0">
            <widget class="QLineEdit" name="fcl_width_input">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>33</string>
             </property>
@@ -100,6 +106,12 @@
           </item>
           <item row="5" column="0">
            <widget class="QLineEdit" name="GridW_input">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>18</string>
             </property>
@@ -117,6 +129,12 @@
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="GridW_label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Сетка колонн по ширине, м</string>
             </property>
@@ -131,6 +149,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="SetSizes">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Задать параметры пространства</string>
             </property>
@@ -138,6 +162,12 @@
           </item>
           <item row="3" column="1">
            <widget class="QLineEdit" name="fcl_height_input">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>33</string>
             </property>
@@ -145,6 +175,12 @@
           </item>
           <item row="5" column="1">
            <widget class="QLineEdit" name="GridH_input">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>12</string>
             </property>
@@ -152,6 +188,12 @@
           </item>
           <item row="1" column="1">
            <widget class="QLabel" name="fcl_heeight_label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Высота пространства, м</string>
             </property>
@@ -169,6 +211,18 @@
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>70</height>
+             </size>
+            </property>
             <property name="text">
              <string>Стоп</string>
             </property>
@@ -183,6 +237,12 @@
           </item>
           <item row="1" column="1">
            <widget class="QPushButton" name="ResetBtn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Сброс</string>
             </property>
@@ -190,6 +250,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="Execution_GA">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Выполнить</string>
             </property>
@@ -208,7 +274,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
+     <width>878</width>
      <height>21</height>
     </rect>
    </property>
