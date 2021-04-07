@@ -414,7 +414,7 @@ class Genetic_implement:
         if self.corrected_ind is not None:
             correctedone = self.toolbox.individual_corrected()
 
-            self.population = [correctedone for elem in self.population]
+            self.population[:int(len(self.population) / 4 - 1)] = [correctedone for elem in self.population[:int(len(self.population) / 4 - 1)]]
 
             # population[len(population) - 1] = self.toolbox.individual_guess()
 

@@ -266,6 +266,7 @@ class Mywindow(QtWidgets.QMainWindow):
                             x1 = Visual_obj.nc.newx
                             y1 = Visual_obj.nc.newy
                             qp.drawLine(QPointF(x0, y0), QPointF(x1, y1))
+                            qp.drawText(int((x1 + x0) / 2 + 10) , int((y1 + y0) / 2 + 10), f'{self.FCL_Ref.cargo_matrix[i][j]} т/год')
 
 
 
@@ -464,15 +465,27 @@ class Mywindow(QtWidgets.QMainWindow):
         x_list = self.correction_obj[0::3]
         y_list = self.correction_obj[1::3]
 
-        x = ((e.x() - A) / Visual_obj.k.kx + Visual_obj.k.xmin)
-        y = ((e.y() - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
+        xtt = ((e.x() - A) / Visual_obj.k.kx + Visual_obj.k.xmin)
+        ytt = ((e.y() - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
 
 
 
         for i in range(len(x_list)):
-            if x > x_list[i] and x < x_list[i] + self.FCL_Ref.Site_list[i].width() and y > y_list[i] and y < y_list[i] + self.FCL_Ref.Site_list[i].height():
+            if xtt > x_list[i] and xtt < x_list[i] + self.FCL_Ref.Site_list[i].width() and ytt > y_list[i] and ytt < y_list[i] + self.FCL_Ref.Site_list[i].height():
                 self.correction_chosen_rect = i
         print(self.correction_chosen_rect)
+
+        xtt = ((e.x() - A) / Visual_obj.k.kx + Visual_obj.k.xmin)
+        ytt = ((e.y() - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
+        p = self.mapToParent(e.pos())
+        for i in range(len(self.FCL_Ref.dictRect)):
+            if (xtt >= self.FCL_Ref.dictRect[i][0] and xtt < self.FCL_Ref.dictRect[i][0] + self.FCL_Ref.dictRect[i][2]) and \
+                    (ytt >= self.FCL_Ref.dictRect[i][1] and ytt < self.FCL_Ref.dictRect[i][1] + self.FCL_Ref.dictRect[i][
+                        3]):
+                QToolTip.showText(p, f'Позиция курсора: {round(xtt, 2)}: {round(ytt, 2)} \n'
+                                     f'{self.FCL_Ref.dictName[i]}\n площадь: {self.FCL_Ref.dictSpace[i]} кв.м\n'
+                                     f'ширина: {self.FCL_Ref.dictRect[i][2]} м \n'
+                                     f' высота: {self.FCL_Ref.dictRect[i][3]} м')
 
         del Visual_obj
 
@@ -487,7 +500,8 @@ class Mywindow(QtWidgets.QMainWindow):
 
     def Stop_ga(self):
 
-        self.GA.Stop = True
+        if self.GA is not None:
+            self.GA.Stop = True
         self.Pre_state = True
         self.ui.CorrectionCheckBox.setChecked(False)
         self.ui.CorrectionCheckBox.setEnabled(False)
@@ -527,7 +541,8 @@ class Mywindow(QtWidgets.QMainWindow):
 
         self.GA.Main_autoga()
 
-        QRectSolution = self.generate_Qrect_Solution(self.GA.hof[0])
+        if self.GA is not None:
+            QRectSolution = self.generate_Qrect_Solution(self.GA.hof[0])
 
         #self.FCL_Ref.Site_list = QRectSolution
         self.FCL_Ref.dictName, self.FCL_Ref.dictSpace, self.FCL_Ref.dictRect = self.tooltipData()
