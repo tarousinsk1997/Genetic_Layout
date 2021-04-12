@@ -36,6 +36,7 @@ class Genetic_implement:
         self.masspoint_hof = QPointF(0,0)
         self.globallogbook = tools.Logbook()
         self.cargo_draw = []
+        self.cargovaluehof = 0
         self.ui_updateFlag =  False
 
         self.corrected_ind = None
@@ -50,9 +51,20 @@ class Genetic_implement:
         self.searchrectsside = 10
         self.searchrects = []
 
+        globalmin = 0
         for i in range(0, len(self.Rect_ind.Site_list)):
+            localmin = self.Rect_ind.Site_list[i].S
+            if localmin < globalmin:
+                globalmin = localmin
+        rootmax = math.sqrt(globalmin)
+        for i in range(0, len(self.Rect_ind.Site_list)):
+            # self.low.extend([self.Rect_ind.fcl.x(), self.Rect_ind.fcl.y(), self.kmin])
+            # self.up.extend([self.Rect_ind.fcl.width() - rootmax * self.kmax, self.Rect_ind.fcl.height() - rootmax * self.kmax, self.kmax])
             self.low.extend([self.Rect_ind.fcl.x(), self.Rect_ind.fcl.y(), self.kmin])
-            self.up.extend([self.Rect_ind.fcl.x() + self.Rect_ind.fcl.width(), self.Rect_ind.fcl.y() + self.Rect_ind.fcl.height(), self.kmax])
+            self.up.extend([self.Rect_ind.fcl.width() - math.floor(rootmax * self.kmax), self.Rect_ind.fcl.height() - math.floor(rootmax * self.kmax), self.kmax])
+
+        print(self.low)
+        print(self.up)
     # гиперпараметры алгоритма
 
     # Переопределение классов
@@ -379,6 +391,8 @@ class Genetic_implement:
                 distance += math.sqrt((pointcurrent[0] - pointhof[0]) ** 2 + (pointcurrent[1] - pointhof[1]) ** 2)
         return distance
 
+    def getcargovalue(self):
+        return self.cargovaluehof
 
     # дополнительные методы
     def draw(self, cargo_fit, q=False):
@@ -414,8 +428,7 @@ class Genetic_implement:
         if self.corrected_ind is not None:
             correctedone = self.toolbox.individual_corrected()
 
-            self.population[:int(len(self.population) / 4 - 1)] = [correctedone for elem in self.population[:int(len(self.population) / 4 - 1)]]
-
+            self.population[:int(len(self.population) / 4 + 1)] = [correctedone for elem in self.population[:int(len(self.population) / 4 + 1)]]
             # population[len(population) - 1] = self.toolbox.individual_guess()
 
         gen = 0
@@ -482,6 +495,7 @@ class Genetic_implement:
             Fit_intercept = self.Interception_criteria(x_list=self.hof[0][0::3], y_list=self.hof[0][1::3]) * self.intercept_constraint
             Fit_cargo = self.mincargo_criteria(cargo=np.array(self.Rect_ind.cargo_matrix).reshape(
                                                                   (len(self.hof[0][0::3]), len(self.hof[0][0::3]))), x_list=self.hof[0][0::3], y_list=self.hof[0][1::3])
+            self.cargovaluehof = Fit_cargo
 
             #print(f'Критерий пересечения= {Fit_intercept}\n Критерий грузопотока={Fit_cargo}\n')
             if Fit_cargo > Fit_intercept:

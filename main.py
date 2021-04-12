@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QToolTip, QInputDialog
 from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QImage, QIntValidator
 from UI_Form import Ui_MainWindow  # импорт нашего сгенерированного файла
 from PreProcessWindow import Ui_PreProcessWindow
-from PyQt5.QtCore import Qt, QPointF, QRectF
+from PyQt5.QtCore import Qt, QPointF, QRectF, QPoint
 import Visual, course, math, os
 import random as rnd
 from matplotlib import pyplot as plt
@@ -22,6 +22,7 @@ class Mywindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Синтез компоновок цехов')
+        self.ui.Cargo_varable.setText('')
         self.i = 2
         self.w = None
 
@@ -63,6 +64,10 @@ class Mywindow(QtWidgets.QMainWindow):
         self.rect_edit = {}
         self.DrawRectsList = []
         self.searchrects = []
+        self.tooltiptext = ''
+        self.mapper = QPoint
+        self.lowga = []
+        self.upga = []
 
         self.correction_obj = None
         self.correction_mouse_pos = []
@@ -86,24 +91,25 @@ class Mywindow(QtWidgets.QMainWindow):
         self.ui_1.setupUi(self.PreProcessWindow)
         self.FCL_Ref = self.generate_initial()
         self.GA = DI.Genetic_implement
-        self.SetFCLSizes()
+
         self.ui_1.FCL_rect = self.FCL_Ref.fcl
 
         self.ui.widget.installEventFilter(self)
 
-        self.ui_1.tableWidget_3.setMouseTracking(True)
-        self.ui_1.tableWidget_3.viewport().setMouseTracking(True)
+        # self.ui_1.tableWidget_3.setMouseTracking(True)
+        # self.ui_1.tableWidget_3.viewport().setMouseTracking(True)
 
         self.ui_1.SIte_Table.setMouseTracking(True)
         self.ui_1.SIte_Table.viewport().setMouseTracking(True)
 
-        self.ui_1.tableWidget_3.viewport().setGeometry(QtCore.QRect(460, 20, 361, 331))
-
-        self.ui_1.tableWidget_3.installEventFilter(self)
-        self.ui_1.tableWidget_3.viewport().installEventFilter(self)
+        # self.ui_1.tableWidget_3.viewport().setGeometry(QtCore.QRect(460, 20, 361, 331))
+        #
+        # self.ui_1.tableWidget_3.installEventFilter(self)
+        # self.ui_1.tableWidget_3.viewport().installEventFilter(self)
 
         self.ui.CorrectionCheckBox.setEnabled(False)
         self.ui_1.checkBox_spaceedit.clicked.connect(self.disableCorrectionwhilespaceedit)
+        self.SetFCLSizes()
 
 
     def disableCorrectionwhilespaceedit(self):
@@ -152,34 +158,6 @@ class Mywindow(QtWidgets.QMainWindow):
         # оси
         pen = QPen(QColor(255, 0, 0), 1, Qt.SolidLine)
         qp.setPen(pen)
-
-        # if hasattr(self.GA, 'searchrectsside'):
-        #     self.searchrects.append(QRectF(self.FCL_Ref.fcl.width() / 2,self.FCL_Ref.fcl.height() / 2,self.GA.searchrectsside,self.GA.searchrectsside))
-        #     self.searchrects.append(QRectF(self.FCL_Ref.fcl.width() / 2 - self.GA.searchrectsside, self.FCL_Ref.fcl.height() / 2, self.GA.searchrectsside,
-        #                            self.GA.searchrectsside))
-        #     self.searchrects.append(QRectF(self.FCL_Ref.fcl.width() / 2, self.FCL_Ref.fcl.height() / 2 - self.GA.searchrectsside, self.GA.searchrectsside,
-        #                            self.GA.searchrectsside))
-        #     self.searchrects.append(QRectF(self.FCL_Ref.fcl.width() / 2 - self.GA.searchrectsside, self.FCL_Ref.fcl.height() / 2 - self.GA.searchrectsside, self.GA.searchrectsside,
-        #                            self.GA.searchrectsside))
-        #     self.GA.searchrects  = self.searchrects
-        #
-        #     for rect in self.searchrects:
-        #         Visual_obj.coordCulc(rect.x(), rect.y() + rect.height())
-        #         x_0 = Visual_obj.nc.newx
-        #         y_0 = Visual_obj.nc.newy
-        #
-        #         Visual_obj.coordCulc(rect.x() + rect.width(), rect.y() + rect.height())
-        #         x_1 = Visual_obj.nc.newx
-        #         y_1 = Visual_obj.nc.newy
-        #
-        #         Visual_obj.coordCulc(rect.x(), rect.y())
-        #         x_2 = Visual_obj.nc.newx
-        #         y_2 = Visual_obj.nc.newy
-        #
-        #         width = x_1 - x_0
-        #         height = y_2 - y_0
-        #         qp.setPen(pen)
-        #         qp.drawRect(x_0, y_0, width, height)
         Image.save(os.path.dirname(__file__) + '\BackgroundImage.png', "PNG", quality=100)
         self.Image = Image
 
@@ -269,27 +247,29 @@ class Mywindow(QtWidgets.QMainWindow):
                             qp.drawText(int((x1 + x0) / 2 + 10) , int((y1 + y0) / 2 + 10), f'{self.FCL_Ref.cargo_matrix[i][j]} т/год')
 
 
-
             self.ui.widget.update()
+
 
 
         if len(self.rect_edit) != 0:
             for i in range(len(self.rect_edit)):
                 if len(self.rect_edit) != 0:
                     for i in range(len(self.rect_edit)):
-                        if self.rect_edit[f'{i}'][2] == self.roadlit:
-                            pen = QPen(QColor(255, 0, 0), mt, Qt.SolidLine)
-                        elif self.rect_edit[f'{i}'][2] == self.voidlit:
-                            pen = QPen(QColor(0, 255, 0), mt, Qt.SolidLine)
-                        elif self.rect_edit[f'{i}'][2] == self.arealit:
-                            pen = QPen(QColor(0, 0, 255), mt, Qt.SolidLine)
+                        try:
+                            if self.rect_edit[f'{i}'][2] == self.roadlit:
+                                pen = QPen(QColor(255, 0, 0), mt, Qt.SolidLine)
+                            elif self.rect_edit[f'{i}'][2] == self.voidlit:
+                                pen = QPen(QColor(0, 255, 0), mt, Qt.SolidLine)
+                            elif self.rect_edit[f'{i}'][2] == self.arealit:
+                                pen = QPen(QColor(0, 0, 255), mt, Qt.SolidLine)
+                        except KeyError:
+                            continue
                         self.drawRectangles(qp, self.rect_edit[f'{i}'][0], pen, QFont("SansSerif", 14), name=self.rect_edit[f'{i}'][1])
 
 
         if self.GA is not None:
             if hasattr(self.GA, 'hof'):
                 self.drawMC(qp)
-
 
         self.ui.widget.update()
 
@@ -388,6 +368,7 @@ class Mywindow(QtWidgets.QMainWindow):
         self.ui_1.pastAreaTable(widget=self.ui_1.Areas_Table, info=self.rect_edit, cols= 3, rows=len(self.rect_edit))
         if len(self.point2list) == 2:
             self.point2list = []
+        self.ui_1.refresh_combobox()
 
     def mouseMoveEvent(self, e):
         Visual_obj = Visual.Visual_Obj(False, self.ui.widget, 10)
@@ -401,6 +382,8 @@ class Mywindow(QtWidgets.QMainWindow):
         y = ((self.y - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
         p = self.mapToParent(e.pos())
         QToolTip.showText(p, f'Позиция курсора: {math.ceil(x)}: {math.ceil(y)}')
+
+
         del Visual_obj
 
     def mouseMoveEvent_editmode(self,e):
@@ -415,14 +398,15 @@ class Mywindow(QtWidgets.QMainWindow):
         self.x = ((self.x - A) / Visual_obj.k.kx + Visual_obj.k.xmin)
         self.y = ((self.y - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
 
-        p = self.mapToParent(e.pos())
+        self.mapper = self.mapToParent(e.pos())
 
         if len(self.point2list) == 1:
             tp2 = self.point2list[0]
-            square =abs(self.x - tp2.x()) * abs(self.y - tp2.y())
-            QToolTip.showText(p, f'Позиция курсора: {self.x}: {self.y}\n Площадь: {round(square, 2)}')
+            square = abs(self.x - tp2.x()) * abs(self.y - tp2.y())
+            width = abs(self.x - tp2.x())
+            QToolTip.showText(self.mapper, f'Позиция курсора: {self.x}: {self.y}\n ширина : {round(width, 2)}\n площадь: {round(square, 2)}')
         else:
-            QToolTip.showText(p, f'Позиция курсора: {math.floor(self.x) if math.ceil(self.x) - self.x >0.5 else math.ceil(self.x)}: {math.floor(self.y) if math.ceil(self.y) - self.x >0.5 else math.ceil(self.y)}')
+            QToolTip.showText(self.mapper, f'Позиция курсора: {math.floor(self.x) if math.ceil(self.x) - self.x >0.5 else math.ceil(self.x)}: {math.floor(self.y) if math.ceil(self.y) - self.x >0.5 else math.ceil(self.y)}')
         del Visual_obj
 
     def mouseMoveEvent_correction(self, e):
@@ -444,10 +428,22 @@ class Mywindow(QtWidgets.QMainWindow):
             klist = self.correction_obj[2::3]
             xlist[self.correction_chosen_rect] = mouseposx - self.FCL_Ref.Site_list[self.correction_chosen_rect].width()
             ylist[self.correction_chosen_rect] = mouseposy - self.FCL_Ref.Site_list[self.correction_chosen_rect].height()
+            cargo_value = self.GA.mincargo_criteria(cargo=self.FCL_Ref.cargo_matrix, x_list=xlist, y_list=ylist)
+            self.ui.Cargo_varable.setText(f'{cargo_value:9.0f} т*м/год')
             self.correction_obj = []
 
 
+
             for i in range(len(xlist)):
+                if xlist[i] < self.lowga[0::3][i]:
+                    xlist[i] = self.lowga[0::3][i]
+                if xlist[i] > self.upga[0::3][i]:
+                    xlist[i] = self.upga[0::3][i]
+                if ylist[i] < self.lowga[1::3][i]:
+                    ylist[i] = self.lowga[1::3][i]
+                if ylist[i] > self.upga[1::3][i]:
+                    ylist[i] = self.upga[1::3][i]
+
                 self.correction_obj.append(xlist[i])
                 self.correction_obj.append(ylist[i])
                 self.correction_obj.append(klist[i])
@@ -499,9 +495,9 @@ class Mywindow(QtWidgets.QMainWindow):
         self.PreProcessWindow.show()
 
     def Stop_ga(self):
-
         if self.GA is not None:
             self.GA.Stop = True
+
         self.Pre_state = True
         self.ui.CorrectionCheckBox.setChecked(False)
         self.ui.CorrectionCheckBox.setEnabled(False)
@@ -524,6 +520,8 @@ class Mywindow(QtWidgets.QMainWindow):
         self.ui.CorrectionCheckBox.setEnabled(False)
         self.ui_1.checkBox_spaceedit.setChecked(False)
 
+        self.ui.Cargo_varable.setText('')
+
         self.FCL_Ref = self.generate_initial()
         self.SetFCLSizes()
 
@@ -532,6 +530,9 @@ class Mywindow(QtWidgets.QMainWindow):
 
         self.GA = DI.Genetic_implement(self.FCL_Ref)
         self.GA.Overload_classes()
+        self.lowga = self.GA.low
+        self.upga = self.GA.up
+
         if self.corrected_ind is not None:
             self.GA.corrected_ind = self.corrected_ind # добавление в GA коррекции
 
@@ -540,6 +541,8 @@ class Mywindow(QtWidgets.QMainWindow):
         self.Pre_state = False
 
         self.GA.Main_autoga()
+
+        self.ui.Cargo_varable.setText(f'{self.GA.cargovaluehof:9.0f} т*м/год')
 
         if self.GA is not None:
             QRectSolution = self.generate_Qrect_Solution(self.GA.hof[0])
@@ -694,6 +697,7 @@ class Mywindow(QtWidgets.QMainWindow):
             self.FCL_Ref.fcl.setWidth(int(self.ui.fcl_width_input.text()))
             self.FCL_Ref.fcl.setHeight(int(self.ui.fcl_height_input.text()))
         self.saveImage()
+        self.ui_1.FCL_Ref = self.FCL_Ref
 
         self.ui.widget.update()
 
