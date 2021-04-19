@@ -13,17 +13,17 @@ import math
 class Genetic_implement:
     def __init__(self, fclIndividual):
     # гиперпараметры алгоритма
-        self.P_MUTATION = 0.7
+        self.P_MUTATION = 0.5
     # вероятность мутации
         self.MAX_GENERATIONS = 1500  # число поколоений
         self.P_CROSSOVER = 0.9  # вероятность скрещивания
         self.HOF_K = 0.2
-        self.POPULATION_SIZE = 200# размер популяции
+        self.POPULATION_SIZE = 150# размер популяции
         self.HALL_OF_FAME_SIZE =int(math.ceil((self.POPULATION_SIZE * self.HOF_K)))  # число хранимых лучших особей
-        self.CROWDING_FACTOR = 20  # коэффициент скученности
+        self.CROWDING_FACTOR = 10  # коэффициент скученности
         self.TOURNSIZE = 2 # турнирный отбор
         self.kmin = 0.75
-        self.kmax = 1.33
+        self.kmax = 1.25
         self.Rect_ind = fclIndividual # ИЗВНЕ ПЕРЕДАЕМ любой ОБЪЕКТ Цеха c ВЫПОЛНЕННЫМИ МЕТОДАМИ в MAIN!!!
         self.Rect_ind_novelty = self.Rect_ind
         self.toolbox = base.Toolbox()
@@ -42,11 +42,11 @@ class Genetic_implement:
         self.corrected_ind = None
 
 
-        self.intercept_constraint = 1
-        self.bound_constraint = 1
+        self.intercept_constraint = 70
+        self.bound_constraint = 70
         self.noveltykoef = 1
-        self.soft_constraint = 0.01
-        self.distancecriteria_koef = 5
+        self.soft_constraint = 5
+        self.distancecriteria_koef = 10
         self.distancenoveltycriteria_koef = self.intercept_constraint * 2
         self.searchrectsside = 10
         self.searchrects = []
@@ -398,12 +398,21 @@ class Genetic_implement:
     def draw(self, cargo_fit, q=False):
         gen = self.globallogbook.select("gen")
         del gen[-1]
-        fit_mins =cargo_fit
+        cargo_fitmin =cargo_fit
+        fitmin = self.globallogbook.select('min')
+        del fitmin[-1]
+        fitmin = [-elem for elem in fitmin]
         fig, ax1 = plt.subplots()
-        line1 = ax1.plot(gen, fit_mins, "b-", label="Суммарный грузопоток")
+        line1 = ax1.plot(gen, cargo_fitmin, "b-", label="Суммарный грузопоток")
         ax1.set_xlabel("Поколение")
-        ax1.set_ylabel("Суммарный грузопток", color="b")
+        ax1.set_ylabel("Суммарный грузопоток", color="b")
         ax1.grid(axis='both', color='k', linestyle='-', linewidth=1)
+
+        ax2 = ax1.twinx()
+        line2 = ax2.plot(gen, fitmin, "b-", label="Приспособленность", color='r')
+        ax2.set_ylabel("Приспособленность", color="r")
+        ax2.set_yticks(np.linspace(ax2.get_yticks()[0], ax2.get_yticks()[-1], len(ax1.get_yticks())))
+
         for tl in ax1.get_yticklabels():
             tl.set_color("b")
         if not q:

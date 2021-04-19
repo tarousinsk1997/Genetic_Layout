@@ -25,6 +25,7 @@ class Mywindow(QtWidgets.QMainWindow):
         self.ui.Cargo_varable.setText('')
         self.i = 2
         self.w = None
+        self.screenresolution = None
 
         self.ui.Execution_GA.clicked.connect(self.execute_ga)
         #self.ui.Execution_GA.clicked.connect(self.execute_with_timer)
@@ -34,6 +35,7 @@ class Mywindow(QtWidgets.QMainWindow):
         self.ui.SetSizes.clicked.connect(self.SetFCLSizes)
         self.ui.cargo_display_btn.clicked.connect(self.cargodisplay_mtd)
         self.ui.CorrectionCheckBox.clicked.connect(self.setcorrectionstate)
+        self.ui.SubArea_display_btn.clicked.connect(self.displaySubAreas)
 
 
         self.counter_label = 0
@@ -42,15 +44,16 @@ class Mywindow(QtWidgets.QMainWindow):
         self.Pressed = False # При инициализации False
         self.Pre_state = True
         self.cargo_display = False #включение отображения грузопотоков
+        self.DisplaySub = True
 
 
 
         #self.PassedChecks = False
 
         self.ui.fcl_width_input.setValidator(QIntValidator(0, 10000))
-        self.ui.fcl_width_input.setText('48')
+        self.ui.fcl_width_input.setText('38')
         self.ui.fcl_height_input.setValidator(QIntValidator(0, 10000))
-        self.ui.fcl_height_input.setText('32')
+        self.ui.fcl_height_input.setText('52')
         self.ui.GridW_input.setValidator(QIntValidator(0, 10000))
         self.ui.GridH_input.setValidator(QIntValidator(0, 10000))
 
@@ -66,12 +69,14 @@ class Mywindow(QtWidgets.QMainWindow):
         self.searchrects = []
         self.tooltiptext = ''
         self.mapper = QPoint
+        self.chosen_rect = None
         self.lowga = []
         self.upga = []
 
         self.correction_obj = None
         self.correction_mouse_pos = []
         self.correction_chosen_rect = None
+        self.correction_chosen_rect_move = None
         self.correction_Pressed = False
         self.correction_state = False
         self.corrected_ind = None
@@ -228,28 +233,43 @@ class Mywindow(QtWidgets.QMainWindow):
         Visual_obj.koefCulc(self.FCL_Ref.fcl)
 
         if self.cargo_display:
-            for i in range(len(self.poslist)):
-                for j in range(len(self.poslist)):
-                    if i != j:
-                        if type(self.FCL_Ref.colorgradmatrix[i][j]) is not int:
-                            R = self.FCL_Ref.colorgradmatrix[i][j][0]
-                            G = self.FCL_Ref.colorgradmatrix[i][j][1]
-                            B = self.FCL_Ref.colorgradmatrix[i][j][2]
-                            qp.setPen(QPen(QColor(R, G, B), 2, Qt.SolidLine))
+                if self.chosen_rect is None:
+                    for i in range(len(self.poslist)):
+                        for j in range(len(self.poslist)):
+                            if i != j:
+                                if type(self.FCL_Ref.colorgradmatrix[i][j]) is not int:
+                                    R = self.FCL_Ref.colorgradmatrix[i][j][0]
+                                    G = self.FCL_Ref.colorgradmatrix[i][j][1]
+                                    B = self.FCL_Ref.colorgradmatrix[i][j][2]
+                                    qp.setPen(QPen(QColor(R, G, B), 2, Qt.SolidLine))
+                                    Visual_obj.coordCulc(self.poslist[i].x(), self.poslist[i].y())
+                                    x0 = Visual_obj.nc.newx
+                                    y0 = Visual_obj.nc.newy
+                                    Visual_obj.coordCulc(self.poslist[j].x(), self.poslist[j].y())
+                                    x1 = Visual_obj.nc.newx
+                                    y1 = Visual_obj.nc.newy
+                                    qp.drawLine(QPointF(x0, y0), QPointF(x1, y1))
+                                    qp.drawText(int((x1 + x0) / 2 + 10) , int((y1 + y0) / 2 + 10), f'{self.FCL_Ref.cargo_matrix[i][j]} т/год')
+                else:
+                    for i in range(len(self.poslist)):
+                        for j in range(len(self.poslist)):
+                            if i != j and i == self.chosen_rect:
+                                if type(self.FCL_Ref.colorgradmatrix[i][j]) is not int:
+                                    R = self.FCL_Ref.colorgradmatrix[i][j][0]
+                                    G = self.FCL_Ref.colorgradmatrix[i][j][1]
+                                    B = self.FCL_Ref.colorgradmatrix[i][j][2]
+                                    qp.setPen(QPen(QColor(R, G, B), 2, Qt.SolidLine))
+                                    Visual_obj.coordCulc(self.poslist[i].x(), self.poslist[i].y())
+                                    x0 = Visual_obj.nc.newx
+                                    y0 = Visual_obj.nc.newy
+                                    Visual_obj.coordCulc(self.poslist[j].x(), self.poslist[j].y())
+                                    x1 = Visual_obj.nc.newx
+                                    y1 = Visual_obj.nc.newy
+                                    qp.drawLine(QPointF(x0, y0), QPointF(x1, y1))
+                                    qp.drawText(int((x1 + x0) / 2 + 10) , int((y1 + y0) / 2 + 10), f'{self.FCL_Ref.cargo_matrix[i][j]} т/год')
 
-                            Visual_obj.coordCulc(self.poslist[i].x(), self.poslist[i].y())
-                            x0 = Visual_obj.nc.newx
-                            y0 = Visual_obj.nc.newy
-                            Visual_obj.coordCulc(self.poslist[j].x(), self.poslist[j].y())
-                            x1 = Visual_obj.nc.newx
-                            y1 = Visual_obj.nc.newy
-                            qp.drawLine(QPointF(x0, y0), QPointF(x1, y1))
-                            qp.drawText(int((x1 + x0) / 2 + 10) , int((y1 + y0) / 2 + 10), f'{self.FCL_Ref.cargo_matrix[i][j]} т/год')
 
-
-            self.ui.widget.update()
-
-
+        self.ui.widget.update()
 
         if len(self.rect_edit) != 0:
             for i in range(len(self.rect_edit)):
@@ -264,8 +284,12 @@ class Mywindow(QtWidgets.QMainWindow):
                                 pen = QPen(QColor(0, 0, 255), mt, Qt.SolidLine)
                         except KeyError:
                             continue
-                        self.drawRectangles(qp, self.rect_edit[f'{i}'][0], pen, QFont("SansSerif", 14), name=self.rect_edit[f'{i}'][1])
-
+                        if not self.rect_edit[f'{i}'][2] == 'Подпространство':
+                            self.drawRectangles(qp, self.rect_edit[f'{i}'][0], pen, QFont("SansSerif", 14),
+                                                name=self.rect_edit[f'{i}'][1])
+                        if self.rect_edit[f'{i}'][2] == 'Подпространство' and self.DisplaySub:
+                            self.drawRectangles(qp, self.rect_edit[f'{i}'][0], pen, QFont("SansSerif", 14),
+                                                name=self.rect_edit[f'{i}'][1])
 
         if self.GA is not None:
             if hasattr(self.GA, 'hof'):
@@ -274,6 +298,8 @@ class Mywindow(QtWidgets.QMainWindow):
         self.ui.widget.update()
 
     def paintEvent_editmode(self, e):
+        Visual_obj = Visual.Visual_Obj(False, self.ui.widget, 10)
+        Visual_obj.koefCulc(self.FCL_Ref.fcl)
         mt = 2 # ТОЛЩИНА ЛИНИИ
         qp = QPainter()
         pen = QPen(QColor(0,0,0), mt, Qt.SolidLine)
@@ -295,7 +321,9 @@ class Mywindow(QtWidgets.QMainWindow):
                 elif self.rect_edit[f'{i}'][2] == self.arealit:
                     pen = QPen(QColor(0, 0, 255), mt, Qt.SolidLine)
                 self.drawRectangles(qp, self.rect_edit[f'{i}'][0], pen, QFont("SansSerif", 14), name=self.rect_edit[f'{i}'][1])
+
         qp.end()
+
         self.ui.widget.update()
 
     def mousePressedEvent(self, e):
@@ -380,9 +408,16 @@ class Mywindow(QtWidgets.QMainWindow):
         self.y = e.y()
         x = ((self.x - A) / Visual_obj.k.kx + Visual_obj.k.xmin)
         y = ((self.y - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
+
+        if hasattr(self.GA,'hof'):
+            hof = self.GA.hof[0]
+            x_list = hof[0::3]
+            y_list = hof[1::3]
+            self.chosen_rect = self.getchosenrect(x_list, y_list, x,y)
+
+
         p = self.mapToParent(e.pos())
         QToolTip.showText(p, f'Позиция курсора: {math.ceil(x)}: {math.ceil(y)}')
-
 
         del Visual_obj
 
@@ -422,10 +457,13 @@ class Mywindow(QtWidgets.QMainWindow):
         mouseposy = ((e.y() - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
 
 
+
+
         if self.correction_Pressed and self.correction_chosen_rect is not None:
             xlist = self.correction_obj[0::3]
             ylist = self.correction_obj[1::3]
             klist = self.correction_obj[2::3]
+            self.correction_chosen_rect_move = self.getchosenrect(xlist,ylist, mouseposx, mouseposy)
             xlist[self.correction_chosen_rect] = mouseposx - self.FCL_Ref.Site_list[self.correction_chosen_rect].width()
             ylist[self.correction_chosen_rect] = mouseposy - self.FCL_Ref.Site_list[self.correction_chosen_rect].height()
             cargo_value = self.GA.mincargo_criteria(cargo=self.FCL_Ref.cargo_matrix, x_list=xlist, y_list=ylist)
@@ -464,11 +502,7 @@ class Mywindow(QtWidgets.QMainWindow):
         xtt = ((e.x() - A) / Visual_obj.k.kx + Visual_obj.k.xmin)
         ytt = ((e.y() - C) / Visual_obj.k.ky + Visual_obj.k.ymin)
 
-
-
-        for i in range(len(x_list)):
-            if xtt > x_list[i] and xtt < x_list[i] + self.FCL_Ref.Site_list[i].width() and ytt > y_list[i] and ytt < y_list[i] + self.FCL_Ref.Site_list[i].height():
-                self.correction_chosen_rect = i
+        self.correction_chosen_rect = self.getchosenrect(x_list, y_list, xtt, ytt)
         print(self.correction_chosen_rect)
 
         xtt = ((e.x() - A) / Visual_obj.k.kx + Visual_obj.k.xmin)
@@ -507,16 +541,18 @@ class Mywindow(QtWidgets.QMainWindow):
 
 
     def Pause_ga(self):
+        if not self.ui.Execution_GA.isEnabled():
+            self.ui.Execution_GA.setEnabled(True)
         if self.GA is not None:
             self.GA.Stop = True
         self.ui_1.checkBox_spaceedit.setChecked(False)
         if not self.Pre_state:
             self.ui.CorrectionCheckBox.setEnabled(True)
 
-
-
-
     def execute_ga(self):
+        if self.ui.Execution_GA.isEnabled():
+            self.ui.Execution_GA.setEnabled(False)
+
         self.ui.CorrectionCheckBox.setEnabled(False)
         self.ui_1.checkBox_spaceedit.setChecked(False)
 
@@ -613,9 +649,6 @@ class Mywindow(QtWidgets.QMainWindow):
         else:
             self.ui.Execution_GA.setEnabled(True)
 
-
-
-
     def generate_Qrect_Solution(self, hof):
 
         x_list = hof[0::3]
@@ -643,7 +676,7 @@ class Mywindow(QtWidgets.QMainWindow):
 
     def generate_initial(self):
         individ = course.Individual()
-        individ.excelparser(os.path.dirname(__file__) + r'\Cargo_test.xls')
+        individ.excelparser(os.path.dirname(__file__) + r'\Cargo_test_my.xls')
         individ.setgradmatrix()
         individ.createSites()
         return individ
@@ -698,9 +731,27 @@ class Mywindow(QtWidgets.QMainWindow):
             self.FCL_Ref.fcl.setHeight(int(self.ui.fcl_height_input.text()))
         self.saveImage()
         self.ui_1.FCL_Ref = self.FCL_Ref
+        self.ui_1.FCL_Var_label.setText(f'{self.FCL_Ref.fcl.width() * self.FCL_Ref.fcl.height()}')
 
+        if self.screenresolution is not None:
+            width = self.FCL_Ref.fcl.width()
+            height = self.FCL_Ref.fcl.height()
+            ratio = width / height
+            windowwidth = self.screenresolution.width() - int(self.screenresolution.width() /2)
+            if ratio > 1:
+                self.setGeometry(50,50, windowwidth, int(windowwidth /ratio))
+            else:
+                self.setGeometry(50,50, int(windowwidth * ratio), windowwidth)
         self.ui.widget.update()
 
+    def displaySubAreas(self):
+        self.DisplaySub = not self.DisplaySub
+        pass
+
+    def getchosenrect(self, xlist, ylist, mousexlocal, mouseylocal):
+        for i in range(len(xlist)):
+            if mousexlocal > xlist[i] and mousexlocal < xlist[i] + self.FCL_Ref.Site_list[i].width() and mouseylocal > ylist[i] and mouseylocal < ylist[i] + self.FCL_Ref.Site_list[i].height():
+                return i
 
 def change_coord(x1, y1, w1, h1):
     x = x1
@@ -725,7 +776,7 @@ def main():
         QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     app = QtWidgets.QApplication([])
     application = Mywindow()
-    screenresolution = app.desktop().screenGeometry()
+    application.screenresolution = app.desktop().screenGeometry()
 
     application.show()
     sys.exit(app.exec())

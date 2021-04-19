@@ -66,7 +66,7 @@ class Site(QtCore.QRectF):
 
 class Individual: #создание всех объектов
     def __init__(self):
-        self.fcl = Facility(0, 0, 50, 50)
+        self.fcl = Facility(0, 0, 38, 52)
 
         self.Sub_Area_list = [] #список объектов подпространств цеха
         self.Site_list = [] #список объектов участков цеха
@@ -89,18 +89,25 @@ class Individual: #создание всех объектов
 
 
 
+
+
+
         for rows in range(1, self.area_sheet.nrows): #заполнение списков названий участкой и площадей участков
             self.area_sitenamelist.append(self.area_sheet.cell_value(rows, 0))
             self.area_sitespacelist.append(self.area_sheet.cell_value(rows, 1))
 
 
 
-        self.cargo_matrix = [[0] * (self.cargo_sheet.nrows - 1) for i in range(self.cargo_sheet.nrows - 1)]
+        self.cargo_matrix = [[0] * (self.cargo_sheet.nrows - 1)  for i in range(self.cargo_sheet.nrows - 1)]
 
 
         for rows in range(0, self.cargo_sheet.nrows - 1):
             for colounmns in range(0, self.cargo_sheet.nrows - 1):
-                self.cargo_matrix[rows][colounmns] = self.cargo_sheet.cell_value(rows + 1, colounmns + 1)
+                if isinstance(self.cargo_sheet.cell_value(rows + 1, colounmns + 1), int) or isinstance(self.cargo_sheet.cell_value(rows + 1, colounmns + 1), float):
+                    self.cargo_matrix[rows][colounmns] = self.cargo_sheet.cell_value(rows + 1, colounmns + 1)
+                else:
+                    self.cargo_matrix[rows][colounmns] = 0
+
 
         self.colorgradmatrix = self.setgradmatrix()
         self.ZipList_area = zip(self.area_sitenamelist, self.area_sitespacelist)
@@ -125,7 +132,7 @@ class Individual: #создание всех объектов
         maxelem = cargo_matrix.max()
         gradmatrix = cargo_matrix / maxelem
         gradmatrix.tolist()
-        colormatrix = [[0] * (self.cargo_sheet.nrows - 1) for i in range(self.cargo_sheet.nrows - 1)]
+        colormatrix = [[0] * (self.cargo_sheet.nrows) for i in range(self.cargo_sheet.nrows)]
         for i in range(len(gradmatrix)):
             for j in range(len(gradmatrix)):
                 if i != j:

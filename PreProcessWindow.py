@@ -205,7 +205,6 @@ class Ui_PreProcessWindow(object):
         # делаем ресайз колонок по содержимому
         self.SIte_Table.resizeColumnsToContents()
         self.refresh_combobox()
-        self.FCL_Var_label.setText(f'{self.FCL_Ref.fcl.width() * self.FCL_Ref.fcl.height()}')
         self.SiteAreaLabel_2.setText(f'{sumsquare}')
 
     def pastAreaTable(self, widget, info, cols=3, rows=10):  # не доделано заполнение
@@ -231,8 +230,12 @@ class Ui_PreProcessWindow(object):
         #     pass
 
     def deleteRow(self, row):
+        rectlist = []
         self.Areas_Table.removeRow(row)
         del self.rect_edit[f'{row}']
+        # for  i in range(1, self.Areas_Table.rowCount()):
+        #    rectlist.append(self.rect_edit[f'{i}'])
+
 
     def linkAreaExit(self):
         linklist = []
