@@ -1,7 +1,7 @@
 import random as rnd
 import numpy as np
 from PyQt5 import QtCore
-import xlrd, math
+import xlrd, math, openpyxl
 rrmin = 0.5
 rrmax = 1.5
 
@@ -81,32 +81,26 @@ class Individual: #создание всех объектов
 
 
     def excelparser(self, path):  #парсер excel Cargo, Area
-        self.cargo = xlrd.open_workbook(path)
-        self.Area = xlrd.open_workbook(path)
+        self.cargo = openpyxl.open(path)
+        self.Area = openpyxl.open(path)
 
-        self.area_sheet = self.Area.sheet_by_index(1)   #листы Excel
-        self.cargo_sheet = self.cargo.sheet_by_index(0) #листы Excel
-
-
+        self.area_sheet = self.Area['Лист2']  #листы Excel
+        self.cargo_sheet = self.cargo['Лист1'] #листы Excel
 
 
+        for rows in range(1, self.area_sheet.max_row + 1): #заполнение списков названий участкой и площадей участков
+            self.area_sitenamelist.append(self.area_sheet.cell(rows, 1).value)
+            self.area_sitespacelist.append(self.area_sheet.cell(rows, 2).value)
+
+        self.cargo_matrix = [[0] * (self.cargo_sheet.max_row - 1)  for i in range(self.cargo_sheet.max_row - 1)]
 
 
-        for rows in range(1, self.area_sheet.nrows): #заполнение списков названий участкой и площадей участков
-            self.area_sitenamelist.append(self.area_sheet.cell_value(rows, 0))
-            self.area_sitespacelist.append(self.area_sheet.cell_value(rows, 1))
-
-
-
-        self.cargo_matrix = [[0] * (self.cargo_sheet.nrows - 1)  for i in range(self.cargo_sheet.nrows - 1)]
-
-
-        for rows in range(0, self.cargo_sheet.nrows - 1):
-            for colounmns in range(0, self.cargo_sheet.nrows - 1):
-                if isinstance(self.cargo_sheet.cell_value(rows + 1, colounmns + 1), int) or isinstance(self.cargo_sheet.cell_value(rows + 1, colounmns + 1), float):
-                    self.cargo_matrix[rows][colounmns] = self.cargo_sheet.cell_value(rows + 1, colounmns + 1)
+        for rows in range(2, self.cargo_sheet.max_row + 1):
+            for colounmns in range(2, self.cargo_sheet.max_row + 1):
+                if isinstance(self.cargo_sheet.cell(rows, colounmns).value, int) or isinstance(self.cargo_sheet.cell(rows, colounmns).value, float):
+                    self.cargo_matrix[rows - 2][colounmns - 2] = self.cargo_sheet.cell(rows, colounmns).value
                 else:
-                    self.cargo_matrix[rows][colounmns] = 0
+                    self.cargo_matrix[rows - 2][colounmns - 2] = 0
 
 
         self.colorgradmatrix = self.setgradmatrix()
@@ -132,7 +126,7 @@ class Individual: #создание всех объектов
         maxelem = cargo_matrix.max()
         gradmatrix = cargo_matrix / maxelem
         gradmatrix.tolist()
-        colormatrix = [[0] * (self.cargo_sheet.nrows) for i in range(self.cargo_sheet.nrows)]
+        colormatrix = [[0] * (self.cargo_sheet.max_row) for i in range(self.cargo_sheet.max_row)]
         for i in range(len(gradmatrix)):
             for j in range(len(gradmatrix)):
                 if i != j:

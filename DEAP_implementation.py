@@ -3,6 +3,7 @@ from deap import base, creator, tools, algorithms
 from matplotlib import pyplot as plt
 import random as rnd
 import numpy as np
+import sys
 
 from PyQt5.QtCore import QCoreApplication, QPointF
 
@@ -13,17 +14,17 @@ import math
 class Genetic_implement:
     def __init__(self, fclIndividual):
     # гиперпараметры алгоритма
-        self.P_MUTATION = 0.5
+        self.P_MUTATION = 0.99
     # вероятность мутации
         self.MAX_GENERATIONS = 1500  # число поколоений
         self.P_CROSSOVER = 0.9  # вероятность скрещивания
-        self.HOF_K = 0.2
-        self.POPULATION_SIZE = 150# размер популяции
+        self.HOF_K = 0.01
+        self.POPULATION_SIZE = 50# размер популяции
         self.HALL_OF_FAME_SIZE =int(math.ceil((self.POPULATION_SIZE * self.HOF_K)))  # число хранимых лучших особей
         self.CROWDING_FACTOR = 10  # коэффициент скученности
         self.TOURNSIZE = 2 # турнирный отбор
-        self.kmin = 0.75
-        self.kmax = 1.25
+        self.kmin = 0.5
+        self.kmax = 2
         self.Rect_ind = fclIndividual # ИЗВНЕ ПЕРЕДАЕМ любой ОБЪЕКТ Цеха c ВЫПОЛНЕННЫМИ МЕТОДАМИ в MAIN!!!
         self.Rect_ind_novelty = self.Rect_ind
         self.toolbox = base.Toolbox()
@@ -42,11 +43,11 @@ class Genetic_implement:
         self.corrected_ind = None
 
 
-        self.intercept_constraint = 70
-        self.bound_constraint = 70
+        self.intercept_constraint = 1
+        self.bound_constraint = 1
         self.noveltykoef = 1
-        self.soft_constraint = 5
-        self.distancecriteria_koef = 10
+        self.soft_constraint = 1
+        self.distancecriteria_koef = 1
         self.distancenoveltycriteria_koef = self.intercept_constraint * 2
         self.searchrectsside = 10
         self.searchrects = []
@@ -63,8 +64,6 @@ class Genetic_implement:
             self.low.extend([self.Rect_ind.fcl.x(), self.Rect_ind.fcl.y(), self.kmin])
             self.up.extend([self.Rect_ind.fcl.width() - math.floor(rootmax * self.kmax), self.Rect_ind.fcl.height() - math.floor(rootmax * self.kmax), self.kmax])
 
-        print(self.low)
-        print(self.up)
     # гиперпараметры алгоритма
 
     # Переопределение классов
@@ -84,8 +83,11 @@ class Genetic_implement:
                                                                                             n=len(self.Rect_ind.Site_list))
 
         self.toolbox.register("individual_corrected", self.correctedindividual_mtd, creator.Individual)
+        self.toolbox.register('PureIndividualCreator', self.createPureIndividual,creator.Individual)
 
         self.toolbox.register("populationCreator", tools.initRepeat, list, self.toolbox.individualCreator)
+        self.toolbox.register("PurePopulationCreator", tools.initRepeat, list, self.toolbox.PureIndividualCreator)
+
         self.toolbox.register("evaluate", self.MinFitness)
         self.toolbox.register("mate", tools.cxSimulatedBinaryBounded,
                               low=self.low,
@@ -97,7 +99,6 @@ class Genetic_implement:
                               up=self.up,
                               eta=self.CROWDING_FACTOR,
                               indpb=1.0 / (len(self.Rect_ind.Site_list) * 3))
-
 
         if self.alg_flag == 0:
             #self.toolbox.register("select", tools.selRoulette)
@@ -119,6 +120,36 @@ class Genetic_implement:
     def correctedindividual_mtd(self, icls):
         return icls(self.corrected_ind)
 
+    def createPureIndividual(self, icls):
+        n = len(self.Rect_ind.Site_list)
+        xlist = []
+        ylist = []
+        klist = []
+        list1 = []
+        counter = 0
+        while len(list1) != 3*n:
+
+            for i in range(n):
+                x = rnd.uniform(self.kmin, self.kmax)
+                xlist.append(x)
+                y = rnd.uniform(self.kmin, self.kmax)
+                ylist.append(y)
+                k = rnd.uniform(self.kmin, self.kmax)
+                klist.append(k)
+            self.recalculate_WH(klist)
+            interception = self.Interception_criteria(xlist, ylist)
+            inbounds = - self.inbounds_criteria(xlist, ylist)
+            sumsquares = sum(self.Rect_ind.area_sitespacelist)
+            if interception < sumsquares * 0.05 and inbounds > sumsquares / 3 * 2:
+                counter += 1
+                print(counter)
+                for i in range(len(klist)):
+                    list1.append(xlist[i])
+                    list1.append(ylist[i])
+                    list1.append(klist[i])
+
+        return icls(list1)
+
     def MinFitness(self, individual): # функция вычисления приспособленности
         x_list = np.array(individual[0::3])
         y_list = np.array(individual[1::3])
@@ -128,20 +159,18 @@ class Genetic_implement:
         cargo = np.array(self.Rect_ind.cargo_matrix).reshape((len(x_list), len(y_list)))
         self.recalculate_WH(k_list)
         if self.alg_flag == 0:
-            Fit_intercept = self.Interception_criteria(x_list, y_list) * self.intercept_constraint
-            Fit_compact = self.compact_criteria(x_list, y_list) * self.soft_constraint
-            Fit_inbounds = self.inbounds_criteria(x_list, y_list) * self.bound_constraint
+            Fit_intercept = self.Interception_criteria(x_list, y_list)
+            Fit_compact = self.compact_criteria(x_list, y_list)
+            Fit_inbounds = self.inbounds_criteria(x_list, y_list)
             Fit_cargo = self.mincargo_criteria(cargo, x_list, y_list)
-            Fit_distance = self.distancecriteria(x_list, y_list) * self.distancecriteria_koef
-
-
+            Fit_distance = self.distancecriteria(x_list, y_list)
             # if Fit_cargo > Fit_intercept:
             #     self.intercept_constraint += 0.0000000001
             #     self.bound_constraint *= self.intercept_constraint
             #     self.soft_constraint = self.intercept_constraint / 100
             #     self.distancecriteria_koef = self.intercept_constraint
         #if len(self.hof) > 1 and self.Interception_criteria(self.hof[0][0::3], self.hof[0][1::3]) == 0 and self.inbounds_criteria(self.hof[0][0::3], self.hof[0][1::3]) == -sumsquares:
-            fit =  Fit_cargo + Fit_distance + Fit_compact + Fit_inbounds + Fit_intercept
+            fit =  Fit_cargo  + Fit_compact + Fit_inbounds + Fit_intercept + Fit_distance
             return (-fit,)
         else:
             fit = self.Interception_criteria(x_list, y_list) * self.intercept_constraint + \
@@ -153,17 +182,17 @@ class Genetic_implement:
 
 
             return (fit, fitnovelty)
-        #print(f"Критерий: {self.Interception_criteria(x_list, y_list)}")
-        #print(f"Критерий: { self.inbounds_criteria(x_list, y_list)}")
+
 
 
 
         # выполнение библиотечного алгоритма
     def Main_autoga(self):
             self.population = self.toolbox.populationCreator(n=self.POPULATION_SIZE)
+            #self.population = self.toolbox.PurePopulationCreator(n=self.POPULATION_SIZE)
             self.population, self.globallogbook = self.eaSimple(self.toolbox, cxpb=self.P_CROSSOVER,
                                                                 mutpb=self.P_MUTATION, ngen=self.MAX_GENERATIONS,
-                                                                stats=self.stats, halloffame=self.hof, verbose=True)
+                                                                stats=self.stats, halloffame=self.hof, verbose=False)
 
 
             # self.population, self.globallogbook = eaMuPlusLambda(self.population, self.toolbox,
@@ -188,46 +217,7 @@ class Genetic_implement:
                     distance_matrix[i][j] = math.sqrt((x1_center - x2_center) ** 2 + (y1_center - y2_center) ** 2)
         return np.sum(np.multiply(cargo, distance_matrix))
 
-    def novelty(self, x_list, y_list):
-        if self.globalgencounter > 1:
 
-            x, y, xhof0, yhof0 = 0, 0, 0, 0
-            k_list = self.hof[0][2::3]
-
-            for i in range(len(k_list)):
-                self.Rect_ind_novelty.Site_list[i].setWidth(math.sqrt(self.Rect_ind_novelty.Site_list[i].S) * k_list[i])
-                self.Rect_ind_novelty.Site_list[i].setHeight(self.Rect_ind_novelty.Site_list[i].S / self.Rect_ind_novelty.Site_list[i].width())
-
-            for i in range(len(x_list)):
-                x += x_list[i] + self.Rect_ind.Site_list[i].width()
-                y += y_list[i] + self.Rect_ind.Site_list[i].height()
-                xhof0 += self.hof[0][0::3][i] + self.Rect_ind_novelty.Site_list[i].width()
-                yhof0 += self.hof[0][1::3][i] + self.Rect_ind_novelty.Site_list[i].height()
-
-            masspoint_current = QPointF(x / len(x_list), y / len(y_list))
-            self.masspoint_hof = QPointF(xhof0 / len(x_list), yhof0 / len(y_list))
-
-            if pointinquad(self.masspoint_hof, self.Rect_ind.fcl)[1] == 0:
-                if masspoint_current.x() < self.masspoint_hof.x() or masspoint_current.y() < self.masspoint_hof.y():
-                    return -1
-                else:
-                    return 0
-            elif pointinquad(self.masspoint_hof, self.Rect_ind.fcl)[1] == 1:
-                if masspoint_current.x() > self.masspoint_hof.x() or masspoint_current.y() < self.masspoint_hof.y():
-                    return -1
-                else:
-                    return 0
-            elif pointinquad(self.masspoint_hof, self.Rect_ind.fcl)[1] == 2:
-                if masspoint_current.x() > self.masspoint_hof.x() or masspoint_current.y() > self.masspoint_hof.y():
-                    return -1
-                else:
-                    return 0
-            elif pointinquad(self.masspoint_hof, self.Rect_ind.fcl)[1] == 3:
-                if masspoint_current.x() < self.masspoint_hof.x() or masspoint_current.y() > self.masspoint_hof.y():
-                    return -1
-                else:
-                    return 0
-        return 0
     def inbounds_criteria(self, x_list, y_list): #здесь определяем, что прямоугольники внутри Sub_Area
         intercept = 0
         fit = 0
@@ -242,6 +232,7 @@ class Genetic_implement:
 
             width = self.Rect_ind.Site_list[i].parent.width()
             height = self.Rect_ind.Site_list[i].parent.height()
+            #print(self.Rect_ind.Site_list[i].name, ' - ', self.Rect_ind.Site_list[i].parent)
 
             x3, y3, width, height = change_coord(x3, y3, width, height)
 
@@ -256,7 +247,8 @@ class Genetic_implement:
             height = top - bottom
             if not (width < 0 or height < 0):
                 intercept += width * height
-        return  - intercept
+        return  - intercept * self.bound_constraint
+
 
     def Interception_criteria(self, x_list, y_list): #здесь определяем пересечение прямоугольников
         intercept = 0
@@ -312,19 +304,20 @@ class Genetic_implement:
                             intercept1 += width * height
 
 
-        return intercept + intercept1
+        return (intercept + intercept1) * self.intercept_constraint
 
     def recalculate_WH(self, k_list): #перевычисление ширины и высоты Site
         for i in range(len(k_list)):
             self.Rect_ind.Site_list[i].setWidth(math.sqrt(self.Rect_ind.Site_list[i].S) * k_list[i])
             self.Rect_ind.Site_list[i].setHeight(self.Rect_ind.Site_list[i].S / self.Rect_ind.Site_list[i].width())
 
+
     def compact_criteria(self, x_list, y_list):
         x_max = max(x_list)
         y_max = max(y_list)
         x_min = min(x_list)
         y_min = min(y_list)
-        return (x_max - x_min) * (y_max - y_min)
+        return (x_max - x_min) * (y_max - y_min) * self.soft_constraint
 
     def void_zones(self, x_list, y_list):
         intercept = 0
@@ -377,8 +370,8 @@ class Genetic_implement:
                 x4 = x3 + width / 2
                 y4 = y3 + height / 2
                 distance += math.sqrt((x2-x4) ** 2 + (y2 - y4) ** 2)
-                counter +=1
-        return distance
+
+        return distance * self.distancecriteria_koef
 
     def distancenoveltycriteria(self, x_list, y_list):
         distance = 0
@@ -485,7 +478,7 @@ class Genetic_implement:
 
             # Replace the current population by the offspring
             self.population[:] = offspring
-            print(self.corrected_ind)
+
 
 
             # Append the current generation statistics to the logbook
@@ -502,16 +495,18 @@ class Genetic_implement:
                                                                   (len(self.hof[0][0::3]), len(self.hof[0][0::3])))))
 
             Fit_intercept = self.Interception_criteria(x_list=self.hof[0][0::3], y_list=self.hof[0][1::3]) * self.intercept_constraint
+            Fit_bound = -self.inbounds_criteria(x_list=self.hof[0][0::3], y_list=self.hof[0][1::3])
             Fit_cargo = self.mincargo_criteria(cargo=np.array(self.Rect_ind.cargo_matrix).reshape(
                                                                   (len(self.hof[0][0::3]), len(self.hof[0][0::3]))), x_list=self.hof[0][0::3], y_list=self.hof[0][1::3])
             self.cargovaluehof = Fit_cargo
 
-            #print(f'Критерий пересечения= {Fit_intercept}\n Критерий грузопотока={Fit_cargo}\n')
-            if Fit_cargo > Fit_intercept:
-                self.intercept_constraint += 1
-                self.bound_constraint = self.intercept_constraint
-                self.soft_constraint = self.intercept_constraint / 10 * 2
-                self.distancecriteria_koef = self.intercept_constraint * 2
+
+            if abs(Fit_cargo) >  abs(Fit_bound):
+                self.bound_constraint = abs(Fit_cargo / Fit_bound) * 100
+                self.intercept_constraint = self.bound_constraint
+                self.soft_constraint = self.bound_constraint / 10
+                self.distancecriteria_koef = self.bound_constraint * 50
+                self.hof[0].fitness.values = (-sys.float_info.max,)
 
         return self.population, logbook
 
