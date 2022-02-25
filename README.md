@@ -1,2 +1,2 @@
-# Genetic_Layout
-#Start main.py script
+# Генетическая оптимизация геометрии компоновок промышленных цехов на python
+# Start main.py script
