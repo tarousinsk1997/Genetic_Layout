@@ -671,7 +671,7 @@ class Mywindow(QtWidgets.QMainWindow):
         for i in range(len(k_list)):
             width = math.sqrt(self.FCL_Ref.Site_list[i].S) * k_list[i]
             height = self.FCL_Ref.Site_list[i].S / width
-            QrectList.append(QtCore.QRect(x_list[i], y_list[i], width, height))
+            QrectList.append(QtCore.QRectF(x_list[i], y_list[i], width, height))
         return QrectList
 
     def generate_initial(self):
